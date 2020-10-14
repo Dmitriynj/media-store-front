@@ -5,8 +5,8 @@ import { useGlobals } from "./GlobalContext";
 
 const names = {
   "/": "Browse / Tracks",
-  "/account": "Account",
-  "/manage": "Manage Orders",
+  "/tracks": "Browse / Tracks",
+  "/person": "Person page",
 };
 
 const CurrentPageHeader = () => {
@@ -14,9 +14,13 @@ const CurrentPageHeader = () => {
   const { loading } = useGlobals();
 
   return (
-    <Breadcrumb style={{ margin: "16px  " }}>
-      <Breadcrumb.Item>{names[location.pathname]}</Breadcrumb.Item>
-      <Breadcrumb.Item>{loading && <Spin />}</Breadcrumb.Item>
+    <Breadcrumb
+      style={{ height: 50, paddingBottom: 20, fontWeight: 600, fontSize: 20 }}
+    >
+      <Breadcrumb.Item>
+        {names[location.pathname]}
+        <span style={{ padding: 10 }}>{loading && <Spin />}</span>
+      </Breadcrumb.Item>
     </Breadcrumb>
   );
 };

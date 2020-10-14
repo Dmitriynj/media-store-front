@@ -1,121 +1,180 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useHistory } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { debounce, isEmpty } from "lodash";
 import { Input, Col, Row, Select } from "antd";
 import axios from "axios";
 import { Track } from "./Track";
-import { handleError } from "./handleError";
 import "./TracksPage.css";
 import { useGlobals } from "./GlobalContext";
+import { useErrors } from "./useErrors";
 
 const { Search } = Input;
 const { Option } = Select;
-const API = "http://localhost:4004";
-const ERROR_PAGES = {
-  401: "/unauthorized",
-  403: "/forbidden",
-  500: "/internal-error",
-};
 
+const DEBOUNCE_TIMER = 500;
+const DEBOUNCE_OPTIONS = {
+  leading: true,
+  trailing: false,
+};
+const PAGE_LIMIT = 20;
 // only for dev
 const config = {
   headers: {
     Authorization: "Basic dXNlcjA6",
   },
 };
+const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
 
+const constructGenresQuery = (genreIds) => {
+  return !isEmpty(genreIds)
+    ? " and " + genreIds.map((value) => `genre_ID eq ${value}`).join(" or ")
+    : "";
+};
+const renderTracks = (tracks) =>
+  tracks.map(({ ID, name, composer, genre, unitPrice }) => (
+    <Col key={ID} className="gutter-row" span={8}>
+      <Track
+        name={name}
+        genreName={genre.name}
+        composer={composer}
+        unitPrice={unitPrice}
+      />
+    </Col>
+  ));
+const renderGenres = (genres) =>
+  genres.map(({ ID, name }) => (
+    <Option key={ID} value={ID.toString()}>
+      {name}
+    </Option>
+  ));
+
+// todo useReducer
 const TracksContainer = () => {
-  const [tracks, setTracks] = useState([]);
-  const [genres, setGenres] = useState([]);
-  const [selectedGenreIDs, setSelectedGenreIDs] = useState([]);
   const { setLoading } = useGlobals();
-  const history = useHistory();
-  const [isMyTracks, setIsMyStracks] = useState(false);
-  const [searchValue, setSearchValue] = useState(false);
+  const { handleError } = useErrors();
+  const [state, setState] = useState({
+    tracks: [],
+    genres: [],
+    pagination: {
+      currentPage: 1,
+      totalPages: 0,
+      PAGE_LIMIT: 20,
+    },
+    searchOptions: {
+      substr: "",
+      genreIds: [],
+      $skip: 0,
+      $top: 20,
+    },
+  });
 
   useEffect(() => {
-    setLoading(true);
-    axios
-      .get(`${API}/browse-tracks/Tracks`, config)
-      .then((response) => setTracks(response.data.value))
-      .catch((error) => handleError(error, ERROR_PAGES, history.push))
-      .then(() => setLoading(false));
-
-    axios
-      .get(`${API}/browse-tracks/Genres`, config)
-      .then((response) => setGenres(response.data.value))
-      .catch((error) => handleError(error, ERROR_PAGES, history.push))
-      .then(() => setLoading(false));
+    const countTracksReq = axios.get(
+      `${BROWSE_TRACKS_SERVICE}/Tracks/$count`,
+      config
+    );
+    const getTracksRequest = axios.get(
+      `${BROWSE_TRACKS_SERVICE}/Tracks?$expand=genre&$top=${PAGE_LIMIT}`,
+      config
+    );
+    const getGenresReq = axios.get(`${BROWSE_TRACKS_SERVICE}/Genres`, config);
+    Promise.all([countTracksReq, getTracksRequest, getGenresReq])
+      .then((responses) => {
+        const [
+          { data: totalPages },
+          {
+            data: { value: tracks },
+          },
+          {
+            data: { value: genres },
+          },
+        ] = responses;
+        setState({
+          ...state,
+          tracks,
+          genres,
+          pagination: { ...state.pagination, totalPages },
+        });
+        setLoading(false);
+      })
+      .catch(handleError);
   }, []);
 
-  const onSearch = (value) => {
-    setLoading(true);
-    // const genreIfExists = selectedGenreIDs
-    axios
-      .get(`${API}/browse-tracks/Tracks?$filter=contains(name,'${value}')`, {
-        ...config,
-      })
-      .then((response) => setTracks(response.data.value))
-      .catch((error) => handleError(error, ERROR_PAGES, history.push))
-      .then(() => setLoading(false));
+  const onSearch = debounce(
+    () => {
+      setLoading(true);
+      axios
+        .get(`${BROWSE_TRACKS_SERVICE}/Tracks`, {
+          ...config,
+          params: {},
+          paramsSerializer: () =>
+            `$expand=genre&$top=${PAGE_LIMIT}&$skip=${
+              state.searchOptions.$skip
+            }&$filter=${
+              `contains(name,'${state.searchOptions.substr}')` +
+              constructGenresQuery(state.searchOptions.genreIds)
+            }`,
+        })
+        .then((response) => {
+          setState({ ...state, tracks: response.data.value });
+          setLoading(false);
+        })
+        .catch(handleError);
+    },
+    DEBOUNCE_TIMER,
+    DEBOUNCE_OPTIONS
+  );
+
+  const onSelectChange = (genres) => {
+    setState({
+      ...state,
+      searchOptions: {
+        ...state.searchOptions,
+        genreIds: genres.map((value) => parseInt(value, 10)),
+      },
+    });
+  };
+  const onSearchChange = (event) => {
+    setState({
+      ...state,
+      searchOptions: { ...state.searchOptions, substr: event.target.value },
+    });
   };
 
-  const onSelectChange = (values) => {
-    setSelectedGenreIDs(values);
-  };
-
-  const tracksElementsList = tracks
-    ? tracks.map(({ ID, name, composer, unitPrice }) => {
-        return (
-          <Col key={ID} className="gutter-row" span={8}>
-            <Track name={name} composer={composer} unitPrice={unitPrice} />
-          </Col>
-        );
-      })
-    : "Please, check your connection";
-
-  const genresElements = genres
-    ? genres.map(({ ID, name }) => {
-        return (
-          <Option key={ID} value={ID.toString()}>
-            {name}
-          </Option>
-        );
-      })
-    : [];
+  const trackElements = renderTracks(state.tracks);
+  const genreElements = renderGenres(state.genres);
 
   return (
     <>
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          alignItems: "start",
+          maxWidth: 600,
+          paddingBottom: 10,
         }}
       >
+        <Select
+          mode="multiple"
+          allowClear
+          style={{ marginRight: 10, borderRadius: 6 }}
+          placeholder="Genres"
+          onChange={(value) => onSelectChange(value)}
+        >
+          {genreElements}
+        </Select>
         <Search
           style={{
-            padding: 5,
             borderRadius: 6,
-            maxWidth: 400,
           }}
           placeholder="Search tracks"
           size="large"
           onSearch={onSearch}
-          onChange={setSearchValue}
+          onChange={onSearchChange}
         />
-        <Select
-          mode="tags"
-          style={{ padding: 5, borderRadius: 6, "min-width": 100 }}
-          placeholder="Tag"
-          onChange={onSelectChange}
-        >
-          {genresElements}
-        </Select>
       </div>
-      {/* <Divider orientation="left">Popular now</Divider> */}
       <div>
         <Row gutter={[{ xs: 8, sm: 16, md: 24, lg: 32 }, 24]}>
-          {tracksElementsList}
+          {trackElements}
         </Row>
       </div>
     </>

@@ -1,17 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { Menu } from "antd";
 import { useHistory } from "react-router-dom";
 
 const Header = () => {
   const history = useHistory();
+  const [selectedKeys, setSelectedKeys] = useState(["1"]);
 
   return (
-    <Menu theme="light" mode="horizontal" defaultSelectedKeys={["2"]}>
-      <Menu.Item key="1" onClick={() => history.push("/")}>
+    <Menu theme="light" mode="horizontal" selectedKeys={selectedKeys}>
+      <Menu.Item
+        key="1"
+        onClick={() => {
+          setSelectedKeys(["1"]);
+          history.push("/");
+        }}
+      >
         Browse
       </Menu.Item>
 
-      <Menu.Item key="2" onClick={() => history.push("/person")}>
+      <Menu.Item
+        key="2"
+        onClick={() => {
+          setSelectedKeys(["2"]);
+          history.push("/person");
+        }}
+      >
         Profile
       </Menu.Item>
       <Menu.Item key="3" onClick={() => history.push("/manage-orders")}>

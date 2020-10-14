@@ -2,26 +2,28 @@ import React from "react";
 import { Card } from "antd";
 import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
 
-const Track = ({ name, composer, unitPrice, isOwned, isSelected }) => {
+const Track = ({
+  name,
+  composer,
+  genreName,
+  unitPrice,
+  isOwned,
+  isSelected,
+}) => {
   return (
     <Card style={{ borderRadius: 6 }} title={name} bordered={false}>
       {composer && (
         <div>
-          <span style={{ fontWeight: 600 }}>Compositor:</span> {composer}
+          Compositor: <span style={{ fontWeight: 600 }}>{composer}</span>
         </div>
       )}
       <div>
-        <span style={{ fontWeight: 600 }}>Price:</span> {unitPrice}
+        Price: <span style={{ fontWeight: 600 }}>{unitPrice}</span>
+      </div>
+      <div>
+        Genre: <span style={{ fontWeight: 600 }}>{genreName}</span>
       </div>
     </Card>
-
-    // <div style={divStyle}>
-    //   <span>{name}</span>
-    //   {isOwned && (
-    //     <Button type="primary" shape="circle" icon={<PlusOutlined />} />
-    //   )}
-    //   {isSelected && <Button danger shape="circle" icon={<MinusOutlined />} />}
-    // </div>
   );
 };
 

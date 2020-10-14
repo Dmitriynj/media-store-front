@@ -2,3 +2,8 @@ div.ant-select.ant-select-multiple.ant-select-show-search > div,
 div.ant-select-dropdown.ant-select-dropdown-placement-bottomLeft {
   border-radius: 6px;
 }
+
+.ant-select > div.ant-select-selector {
+  padding: 5px;
+  min-width: 300px;
+}

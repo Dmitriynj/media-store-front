@@ -1,20 +1,26 @@
 import React, { useMemo, createContext, useContext, useState } from "react";
 const globalContext = {
-  loading: {},
-  setLoading: () => {},
+  globals: {
+    error: {},
+    loading: true,
+    invoicedTrackIds: [],
+  },
+  setGlobals: () => {},
 };
 const GlobalContext = createContext(globalContext);
 const useGlobals = () => useContext(GlobalContext);
 
 const GlobalContextProvider = ({ children }) => {
-  const [loading, setLoading] = useState(false);
+  const [globals, setGlobals] = useState({});
 
   const value = useMemo(
     () => ({
-      loading: loading,
-      setLoading: (loadingProp) => setLoading(loadingProp),
+      error: globals.error,
+      loading: globals.loading,
+      setLoading: (loading) => setGlobals({ ...globals, loading }),
+      setError: (error) => setGlobals({ ...globals, error }),
     }),
-    [loading]
+    [globals]
   );
 
   return (
