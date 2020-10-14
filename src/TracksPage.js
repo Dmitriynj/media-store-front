@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { debounce, isEmpty } from "lodash";
 import { Input, Col, Row, Select } from "antd";
 import axios from "axios";
@@ -16,12 +16,7 @@ const DEBOUNCE_OPTIONS = {
   trailing: false,
 };
 const PAGE_LIMIT = 20;
-// only for dev
-const config = {
-  headers: {
-    Authorization: "Basic dXNlcjA6",
-  },
-};
+
 const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
 
 const constructGenresQuery = (genreIds) => {
@@ -30,13 +25,14 @@ const constructGenresQuery = (genreIds) => {
     : "";
 };
 const renderTracks = (tracks) =>
-  tracks.map(({ ID, name, composer, genre, unitPrice }) => (
+  tracks.map(({ ID, name, composer, genre, unitPrice, alreadyOrdered }) => (
     <Col key={ID} className="gutter-row" span={8}>
       <Track
         name={name}
         genreName={genre.name}
         composer={composer}
         unitPrice={unitPrice}
+        alreadyOrdered={alreadyOrdered}
       />
     </Col>
   ));
@@ -47,9 +43,8 @@ const renderGenres = (genres) =>
     </Option>
   ));
 
-// todo useReducer
 const TracksContainer = () => {
-  const { setLoading } = useGlobals();
+  const { user, setLoading } = useGlobals();
   const { handleError } = useErrors();
   const [state, setState] = useState({
     tracks: [],
@@ -66,17 +61,19 @@ const TracksContainer = () => {
       $top: 20,
     },
   });
+  const isUserAuth = !!user.mockedToken;
 
   useEffect(() => {
-    const countTracksReq = axios.get(
-      `${BROWSE_TRACKS_SERVICE}/Tracks/$count`,
-      config
-    );
+    console.log("isUserAuth", isUserAuth);
+    const countTracksReq = axios.get(`${BROWSE_TRACKS_SERVICE}/Tracks/$count`);
     const getTracksRequest = axios.get(
-      `${BROWSE_TRACKS_SERVICE}/Tracks?$expand=genre&$top=${PAGE_LIMIT}`,
-      config
+      `${BROWSE_TRACKS_SERVICE}/${
+        isUserAuth ? "MarkedTracks" : "Tracks"
+      }?$expand=genre&$top=${PAGE_LIMIT}&$filter=ID eq 98`
     );
-    const getGenresReq = axios.get(`${BROWSE_TRACKS_SERVICE}/Genres`, config);
+    const getGenresReq = axios.get(`${BROWSE_TRACKS_SERVICE}/Genres`);
+
+    // const getMyTrackIDs = axios.get(``)
     Promise.all([countTracksReq, getTracksRequest, getGenresReq])
       .then((responses) => {
         const [
@@ -88,6 +85,7 @@ const TracksContainer = () => {
             data: { value: genres },
           },
         ] = responses;
+        console.log(tracks);
         setState({
           ...state,
           tracks,
@@ -97,14 +95,13 @@ const TracksContainer = () => {
         setLoading(false);
       })
       .catch(handleError);
-  }, []);
+  }, [user]);
 
   const onSearch = debounce(
     () => {
       setLoading(true);
       axios
         .get(`${BROWSE_TRACKS_SERVICE}/Tracks`, {
-          ...config,
           params: {},
           paramsSerializer: () =>
             `$expand=genre&$top=${PAGE_LIMIT}&$skip=${
@@ -123,7 +120,6 @@ const TracksContainer = () => {
     DEBOUNCE_TIMER,
     DEBOUNCE_OPTIONS
   );
-
   const onSelectChange = (genres) => {
     setState({
       ...state,

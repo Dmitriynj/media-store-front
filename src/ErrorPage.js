@@ -10,7 +10,7 @@ const ErrorPage = () => {
 
   const onGoHome = () => {
     setError({});
-    history.push("/tracks");
+    history.push("/");
   };
 
   const errorResultProps = isEmpty(error)

@@ -5,8 +5,8 @@ import { useGlobals } from "./GlobalContext";
 
 const names = {
   "/": "Browse / Tracks",
-  "/tracks": "Browse / Tracks",
-  "/person": "Person page",
+  "/person": "Person data",
+  "/login": "Login form",
 };
 
 const CurrentPageHeader = () => {

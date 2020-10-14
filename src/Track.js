@@ -1,15 +1,8 @@
 import React from "react";
-import { Card } from "antd";
-import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
+import { Card, Button } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 
-const Track = ({
-  name,
-  composer,
-  genreName,
-  unitPrice,
-  isOwned,
-  isSelected,
-}) => {
+const Track = ({ name, composer, genreName, unitPrice, alreadyOrdered }) => {
   return (
     <Card style={{ borderRadius: 6 }} title={name} bordered={false}>
       {composer && (
@@ -23,6 +16,11 @@ const Track = ({
       <div>
         Genre: <span style={{ fontWeight: 600 }}>{genreName}</span>
       </div>
+      {alreadyOrdered && (
+        <Button onClick={() => {}}>
+          <PlusOutlined />
+        </Button>
+      )}
     </Card>
   );
 };
