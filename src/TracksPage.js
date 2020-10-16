@@ -132,7 +132,6 @@ const TracksContainer = () => {
     });
   };
   const onChangePage = (pageNumber) => {
-    window.scroll({ top: 0, left: 0, behavior: "smooth" });
     document
       .querySelector("section.ant-layout")
       .scrollTo({ top: 0, left: 0, behavior: "smooth" });
