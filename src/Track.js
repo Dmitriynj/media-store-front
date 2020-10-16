@@ -16,7 +16,7 @@ const Track = ({ name, composer, genreName, unitPrice, alreadyOrdered }) => {
       <div>
         Genre: <span style={{ fontWeight: 600 }}>{genreName}</span>
       </div>
-      {alreadyOrdered && (
+      {!alreadyOrdered && (
         <Button onClick={() => {}}>
           <PlusOutlined />
         </Button>

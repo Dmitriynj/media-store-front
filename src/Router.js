@@ -12,8 +12,14 @@ import { Header } from "./Header";
 import { PersonPage } from "./PersonPage";
 import { ErrorPage } from "./ErrorPage";
 import { Login } from "./Login";
+import { withRestrictions } from "./withRestrictions";
 
 const { Content } = Layout;
+
+const RestrictedLogin = withRestrictions(Login, { isAuth: false });
+const RestrictedPersonPage = withRestrictions(PersonPage, {
+  isAuth: true,
+});
 
 const MyRouter = () => {
   return (
@@ -35,10 +41,10 @@ const MyRouter = () => {
                   <TracksContainer />
                 </Route>
                 <Route exact path="/person">
-                  <PersonPage />
+                  <RestrictedPersonPage />
                 </Route>
                 <Route exact path="/login">
-                  <Login />
+                  <RestrictedLogin />
                 </Route>
                 <Route>
                   <Redirect to="/error" />

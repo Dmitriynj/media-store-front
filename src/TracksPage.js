@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { debounce, isEmpty } from "lodash";
-import { Input, Col, Row, Select } from "antd";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { debounce } from "lodash";
+import { Input, Col, Row, Select, Pagination } from "antd";
 import { Track } from "./Track";
 import "./TracksPage.css";
 import { useGlobals } from "./GlobalContext";
 import { useErrors } from "./useErrors";
+import { fetchTacks, countTracks, fetchGenres } from "./fetch-service";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -15,15 +15,7 @@ const DEBOUNCE_OPTIONS = {
   leading: true,
   trailing: false,
 };
-const PAGE_LIMIT = 20;
 
-const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
-
-const constructGenresQuery = (genreIds) => {
-  return !isEmpty(genreIds)
-    ? " and " + genreIds.map((value) => `genre_ID eq ${value}`).join(" or ")
-    : "";
-};
 const renderTracks = (tracks) =>
   tracks.map(({ ID, name, composer, genre, unitPrice, alreadyOrdered }) => (
     <Col key={ID} className="gutter-row" span={8}>
@@ -44,40 +36,32 @@ const renderGenres = (genres) =>
   ));
 
 const TracksContainer = () => {
-  const { user, setLoading } = useGlobals();
+  const { getUser, setLoading } = useGlobals();
   const { handleError } = useErrors();
   const [state, setState] = useState({
     tracks: [],
     genres: [],
     pagination: {
       currentPage: 1,
-      totalPages: 0,
-      PAGE_LIMIT: 20,
+      totalItems: 0,
+      pageSize: 20,
     },
     searchOptions: {
       substr: "",
       genreIds: [],
-      $skip: 0,
-      $top: 20,
     },
   });
-  const isUserAuth = !!user.mockedToken;
+  const isAuthenticated = getUser().isAuth;
 
   useEffect(() => {
-    console.log("isUserAuth", isUserAuth);
-    const countTracksReq = axios.get(`${BROWSE_TRACKS_SERVICE}/Tracks/$count`);
-    const getTracksRequest = axios.get(
-      `${BROWSE_TRACKS_SERVICE}/${
-        isUserAuth ? "MarkedTracks" : "Tracks"
-      }?$expand=genre&$top=${PAGE_LIMIT}&$filter=ID eq 98`
-    );
-    const getGenresReq = axios.get(`${BROWSE_TRACKS_SERVICE}/Genres`);
+    const countTracksReq = countTracks(isAuthenticated);
+    const getTracksRequest = fetchTacks(isAuthenticated);
+    const getGenresReq = fetchGenres();
 
-    // const getMyTrackIDs = axios.get(``)
     Promise.all([countTracksReq, getTracksRequest, getGenresReq])
       .then((responses) => {
         const [
-          { data: totalPages },
+          { data: totalItems },
           {
             data: { value: tracks },
           },
@@ -90,29 +74,41 @@ const TracksContainer = () => {
           ...state,
           tracks,
           genres,
-          pagination: { ...state.pagination, totalPages },
+          pagination: { ...state.pagination, totalItems },
         });
         setLoading(false);
       })
       .catch(handleError);
-  }, [user]);
+  }, []);
 
   const onSearch = debounce(
     () => {
       setLoading(true);
-      axios
-        .get(`${BROWSE_TRACKS_SERVICE}/Tracks`, {
-          params: {},
-          paramsSerializer: () =>
-            `$expand=genre&$top=${PAGE_LIMIT}&$skip=${
-              state.searchOptions.$skip
-            }&$filter=${
-              `contains(name,'${state.searchOptions.substr}')` +
-              constructGenresQuery(state.searchOptions.genreIds)
-            }`,
-        })
-        .then((response) => {
-          setState({ ...state, tracks: response.data.value });
+      const options = {
+        $top: state.pagination.pageSize,
+        substr: state.searchOptions.substr,
+        genreIds: state.searchOptions.genreIds,
+      };
+
+      Promise.all([
+        fetchTacks(isAuthenticated, options),
+        countTracks(isAuthenticated, {
+          substr: options.substr,
+          genreIds: options.genreIds,
+        }),
+      ])
+        .then((responses) => {
+          const [
+            {
+              data: { value: tracks },
+            },
+            { data: totalItems },
+          ] = responses;
+          setState({
+            ...state,
+            tracks,
+            pagination: { ...state.pagination, totalItems },
+          });
           setLoading(false);
         })
         .catch(handleError);
@@ -134,6 +130,26 @@ const TracksContainer = () => {
       ...state,
       searchOptions: { ...state.searchOptions, substr: event.target.value },
     });
+  };
+  const onChangePage = (pageNumber) => {
+    window.scroll({ top: 0, left: 0, behavior: "smooth" });
+    document
+      .querySelector("section.ant-layout")
+      .scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    const $skip = (pageNumber - 1) * state.pagination.pageSize;
+    setLoading(true);
+
+    fetchTacks(isAuthenticated, { $skip })
+      .then((response) => {
+        console.log(response.data.value);
+        setState({
+          ...state,
+          tracks: response.data.value,
+          pagination: { ...state.pagination, currentPage: pageNumber },
+        });
+        setLoading(false);
+      })
+      .catch(handleError);
   };
 
   const trackElements = renderTracks(state.tracks);
@@ -172,6 +188,15 @@ const TracksContainer = () => {
         <Row gutter={[{ xs: 8, sm: 16, md: 24, lg: 32 }, 24]}>
           {trackElements}
         </Row>
+      </div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Pagination
+          showSizeChanger={false}
+          defaultCurrent={1}
+          total={state.pagination.totalItems}
+          pageSize={state.pagination.pageSize}
+          onChange={onChangePage}
+        />
       </div>
     </>
   );

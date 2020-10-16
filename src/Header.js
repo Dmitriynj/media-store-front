@@ -8,27 +8,29 @@ const keys = ["/", "/person", "/login", "manage-orders"];
 
 const Header = () => {
   const history = useHistory();
-  const { user } = useGlobals();
+  const { getUser } = useGlobals();
   const location = useLocation();
   const currentKey = [keys.find((key) => key === location.pathname)];
+
+  const user = getUser();
 
   return (
     <Menu theme="light" mode="horizontal" selectedKeys={currentKey}>
       <Menu.Item key="/" onClick={() => history.push("/")}>
         Browse
       </Menu.Item>
-      {!user.mockedToken && (
+      {!user.isAuth && (
         <Menu.Item key="/login" onClick={() => history.push("/login")}>
           Login
         </Menu.Item>
       )}
 
-      {user.mockedToken && (
+      {user.isAuth && (
         <Menu.Item key="/person" onClick={() => history.push("/person")}>
           Profile
         </Menu.Item>
       )}
-      {user && user.isAdmin && (
+      {user.isAuth && user.isAdmin && (
         <Menu.Item
           key="/manage-orders"
           onClick={() => history.push("/manage-orders")}

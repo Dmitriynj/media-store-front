@@ -16,6 +16,7 @@ const globalContext = {
     email: undefined,
     level: undefined,
     mockedToken: undefined,
+    isAuth: undefined,
   },
 };
 const GlobalContext = createContext(globalContext);
@@ -50,11 +51,11 @@ const GlobalContextProvider = ({ children }) => {
   const [error, setError] = useState({});
 
   const { getUserToken, setUserToken } = useUserData();
-
-  useEffect(() => {
-    console.log("setting suer with token", getUserToken());
-    setUser({ mockedToken: getUserToken() });
-  }, []);
+  const getUser = () => {
+    const mockedToken = getUserToken();
+    const isAuth = !!mockedToken;
+    return { isAuth, mockedToken };
+  };
 
   const value = useMemo(() => {
     console.log("current globals: ", user, loading, error);
@@ -62,7 +63,6 @@ const GlobalContextProvider = ({ children }) => {
     return {
       error: error,
       loading: loading,
-      user: user,
       setLoading: (loadingParam) => setLoading(loadingParam),
       setError: (errorParam) => setError(errorParam),
       setUser: (userParam) => {
@@ -70,6 +70,7 @@ const GlobalContextProvider = ({ children }) => {
         console.log("setting user", userParam);
         setUser(userParam);
       },
+      getUser: () => getUser(),
     };
   }, [user, loading, error]);
 
