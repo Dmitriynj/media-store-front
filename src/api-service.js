@@ -2,6 +2,7 @@ import { isEmpty } from "lodash";
 import axios from "axios";
 
 const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
+const INVOICES_SERVICE = "http://localhost:4004/invoices";
 
 const constructGenresQuery = (genreIds) => {
   return !isEmpty(genreIds)
@@ -16,7 +17,7 @@ const fetchTacks = (
   const entityName = isAuthenticated ? "MarkedTracks" : "Tracks";
 
   const serializeTracksUrl = () => {
-    return `$expand=genre&$top=${$top}&$skip=${$skip}&$filter=${
+    return `$expand=genre,album($expand=artist)&$top=${$top}&$skip=${$skip}&$filter=${
       `contains(name,'${substr}')` + constructGenresQuery(genreIds)
     }`;
   };
@@ -43,4 +44,19 @@ const fetchGenres = () => {
   return axios.get(`${BROWSE_TRACKS_SERVICE}/Genres`);
 };
 
-export { fetchTacks, countTracks, fetchGenres };
+const invoice = (tracks) => {
+  return axios.post(
+    `${INVOICES_SERVICE}/invoice`,
+    {
+      tracks: tracks.map(({ unitPrice, track_ID }) => ({
+        unitPrice: `${unitPrice}`,
+        track_ID,
+      })),
+    },
+    {
+      headers: { "content-type": "application/json;IEEE754Compatible=true" },
+    }
+  );
+};
+
+export { fetchTacks, countTracks, fetchGenres, invoice };

@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  createContext,
-  useContext,
-  useState,
-} from "react";
+import React, { useMemo, createContext, useContext, useState } from "react";
 import axios from "axios";
 
 const globalContext = {
@@ -18,6 +12,7 @@ const globalContext = {
     mockedToken: undefined,
     isAuth: undefined,
   },
+  invoicedItems: [],
 };
 const GlobalContext = createContext(globalContext);
 const useGlobals = () => useContext(GlobalContext);
@@ -49,6 +44,7 @@ const GlobalContextProvider = ({ children }) => {
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
+  const [invoicedItems, setInvoicedItems] = useState([]);
 
   const { getUserToken, setUserToken } = useUserData();
   const getUser = () => {
@@ -63,6 +59,7 @@ const GlobalContextProvider = ({ children }) => {
     return {
       error: error,
       loading: loading,
+      invoicedItems: invoicedItems,
       setLoading: (loadingParam) => setLoading(loadingParam),
       setError: (errorParam) => setError(errorParam),
       setUser: (userParam) => {
@@ -71,8 +68,10 @@ const GlobalContextProvider = ({ children }) => {
         setUser(userParam);
       },
       getUser: () => getUser(),
+      setInvoicedItems: (invoicedItemsParam) =>
+        setInvoicedItems(invoicedItemsParam),
     };
-  }, [user, loading, error]);
+  }, [user, loading, error, invoicedItems]);
 
   return (
     <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>

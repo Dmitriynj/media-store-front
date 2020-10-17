@@ -7,6 +7,7 @@ const names = {
   "/": "Browse / Tracks",
   "/person": "Person data",
   "/login": "Login form",
+  "/invoice": "Requested items",
 };
 
 const CurrentPageHeader = () => {

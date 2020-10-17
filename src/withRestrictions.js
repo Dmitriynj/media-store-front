@@ -12,19 +12,19 @@ const pagesConfig = {
   },
 };
 
-const withRestrictions = (Component, restrictions) => {
+const withRestrictions = (Component, isUserMeetRestrictions) => {
   return (props) => {
-    const { getUser } = useGlobals();
+    const { getUser, invoicedItems } = useGlobals();
     const user = getUser();
-    const currentUserRestr = {
-      isAuth: user.isAuth,
-    };
-    console.log("currentUserRestr", currentUserRestr);
-    console.log("restrictions", restrictions);
-    const isUserMeetRestrictions =
-      currentUserRestr.isAuth === restrictions.isAuth;
+    // const currentUserRestr = {
+    //   isAuth: user.isAuth,
+    // };
+    // console.log("currentUserRestr", currentUserRestr);
+    // console.log("restrictions", restrictions);
+    // const isUserMeetRestrictions =
+    //   currentUserRestr.isAuth === restrictions.isAuth;
 
-    return isUserMeetRestrictions ? (
+    return isUserMeetRestrictions({ user, invoicedItems }) ? (
       <Component {...props} />
     ) : (
       <Redirect exact to="/error" />

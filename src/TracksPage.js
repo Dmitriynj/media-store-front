@@ -5,7 +5,7 @@ import { Track } from "./Track";
 import "./TracksPage.css";
 import { useGlobals } from "./GlobalContext";
 import { useErrors } from "./useErrors";
-import { fetchTacks, countTracks, fetchGenres } from "./fetch-service";
+import { fetchTacks, countTracks, fetchGenres } from "./api-service";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -16,18 +16,24 @@ const DEBOUNCE_OPTIONS = {
   trailing: false,
 };
 
-const renderTracks = (tracks) =>
-  tracks.map(({ ID, name, composer, genre, unitPrice, alreadyOrdered }) => (
-    <Col key={ID} className="gutter-row" span={8}>
-      <Track
-        name={name}
-        genreName={genre.name}
-        composer={composer}
-        unitPrice={unitPrice}
-        alreadyOrdered={alreadyOrdered}
-      />
-    </Col>
-  ));
+const renderTracks = (tracks, invoicedItems) =>
+  tracks.map(
+    ({ ID, name, composer, genre, unitPrice, alreadyOrdered, album }) => (
+      <Col key={ID} className="gutter-row" span={8}>
+        <Track
+          ID={ID}
+          name={name}
+          genreName={genre.name}
+          albumTitle={album.title}
+          artist={album.artist.name}
+          composer={composer}
+          unitPrice={unitPrice}
+          alreadyOrdered={alreadyOrdered}
+          isInvoiced={invoicedItems.includes(ID)}
+        />
+      </Col>
+    )
+  );
 const renderGenres = (genres) =>
   genres.map(({ ID, name }) => (
     <Option key={ID} value={ID.toString()}>
@@ -36,7 +42,7 @@ const renderGenres = (genres) =>
   ));
 
 const TracksContainer = () => {
-  const { getUser, setLoading } = useGlobals();
+  const { getUser, setLoading, invoicedItems } = useGlobals();
   const { handleError } = useErrors();
   const [state, setState] = useState({
     tracks: [],
@@ -54,6 +60,8 @@ const TracksContainer = () => {
   const isAuthenticated = getUser().isAuth;
 
   useEffect(() => {
+    setLoading(true);
+
     const countTracksReq = countTracks(isAuthenticated);
     const getTracksRequest = fetchTacks(isAuthenticated);
     const getGenresReq = fetchGenres();
@@ -151,7 +159,7 @@ const TracksContainer = () => {
       .catch(handleError);
   };
 
-  const trackElements = renderTracks(state.tracks);
+  const trackElements = renderTracks(state.tracks, invoicedItems);
   const genreElements = renderGenres(state.genres);
 
   return (

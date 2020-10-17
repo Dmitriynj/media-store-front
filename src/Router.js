@@ -5,6 +5,7 @@ import {
   Route,
   Redirect,
 } from "react-router-dom";
+import { isEmpty } from "lodash";
 import { Layout } from "antd";
 import { TracksContainer } from "./TracksPage";
 import { CurrentPageHeader } from "./CurrentPageHeader";
@@ -13,13 +14,19 @@ import { PersonPage } from "./PersonPage";
 import { ErrorPage } from "./ErrorPage";
 import { Login } from "./Login";
 import { withRestrictions } from "./withRestrictions";
+import { InvoicePage } from "./InvoicePage";
 
 const { Content } = Layout;
 
-const RestrictedLogin = withRestrictions(Login, { isAuth: false });
-const RestrictedPersonPage = withRestrictions(PersonPage, {
-  isAuth: true,
-});
+const RestrictedLogin = withRestrictions(Login, ({ user }) => !user.isAuth);
+const RestrictedInvoicePage = withRestrictions(
+  InvoicePage,
+  ({ user, invoicedItems }) => user.isAuth && !isEmpty(invoicedItems)
+);
+const RestrictedPersonPage = withRestrictions(
+  PersonPage,
+  ({ user }) => user.isAuth
+);
 
 const MyRouter = () => {
   return (
@@ -30,28 +37,26 @@ const MyRouter = () => {
         </Route>
         <Route>
           <Header />
-          <Content
-            className="site-layout"
-            style={{ padding: "0 50px", marginTop: 20 }}
-          >
-            <div style={{ padding: "24px" }}>
-              <CurrentPageHeader />
-              <Switch>
-                <Route exact path={["/"]}>
-                  <TracksContainer />
-                </Route>
-                <Route exact path="/person">
-                  <RestrictedPersonPage />
-                </Route>
-                <Route exact path="/login">
-                  <RestrictedLogin />
-                </Route>
-                <Route>
-                  <Redirect to="/error" />
-                </Route>
-              </Switch>
-            </div>
-          </Content>
+          <div style={{ padding: "2em 20vh" }}>
+            <CurrentPageHeader />
+            <Switch>
+              <Route exact path={["/"]}>
+                <TracksContainer />
+              </Route>
+              <Route exact path="/person">
+                <RestrictedPersonPage />
+              </Route>
+              <Route exact path="/login">
+                <RestrictedLogin />
+              </Route>
+              <Route exact path="/invoice">
+                <RestrictedInvoicePage />
+              </Route>
+              <Route>
+                <Redirect to="/error" />
+              </Route>
+            </Switch>
+          </div>
         </Route>
       </Switch>
     </Router>
