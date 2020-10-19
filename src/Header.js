@@ -22,8 +22,6 @@ const Header = () => {
   const invoicedItemsLength = invoicedItems.length;
   const user = getUser();
 
-  console.log("invoiced items in header", invoicedItems);
-
   return (
     <div
       style={{

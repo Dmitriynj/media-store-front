@@ -6,7 +6,7 @@ const useErrors = () => {
   const { setError } = useGlobals();
 
   const handleError = (error) => {
-    console.log("Error", error);
+    console.error("Error", error);
     if (error.response) {
       setError({
         status: error.response.status,

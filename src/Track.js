@@ -19,11 +19,10 @@ const Track = ({
 
   const onChangedStatus = () => {
     const newInvoiced = !isInvoiced;
-    console.log("changing status", newInvoiced, ID);
     if (newInvoiced) {
       setInvoicedItems([
         ...invoicedItems,
-        { track_ID: ID, name, artist, albumTitle, unitPrice },
+        { ID, name, artist, albumTitle, unitPrice },
       ]);
     } else {
       setInvoicedItems(invoicedItems.filter(({ ID: curID }) => curID !== ID));

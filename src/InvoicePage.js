@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { Table, Button, Result } from "antd";
-import { SmileOutlined } from "@ant-design/icons";
-
+import React from "react";
+import { Table, Button } from "antd";
+import { uniqueId } from "lodash";
 import { useGlobals } from "./GlobalContext";
 import { useHistory } from "react-router-dom";
 import { invoice } from "./api-service";
@@ -29,27 +28,39 @@ const columns = [
 const InvoicePage = () => {
   const history = useHistory();
   const { handleError } = useErrors();
-  const { invoicedItems, setInvoicedItems, setLoading } = useGlobals();
-  const [isInvoiceCompleted, setIsInvoiceCompleted] = useState(false);
+  const {
+    invoicedItems,
+    setInvoicedItems,
+    setLoading,
+    setNotifications,
+    notifications,
+  } = useGlobals();
 
-  const data = invoicedItems.map(({ track_ID: key, ...otherProps }) => ({
+  const data = invoicedItems.map(({ ID: key, ...otherProps }) => ({
     key,
     ...otherProps,
   }));
-  console.log("data", data);
 
   const onBuy = () => {
     setLoading(true);
     invoice(
-      invoicedItems.map(({ track_ID, unitPrice }) => ({
-        track_ID,
+      invoicedItems.map(({ ID, unitPrice }) => ({
+        ID,
         unitPrice,
       }))
     )
       .then(() => {
-        setIsInvoiceCompleted(true);
         setLoading(false);
+        setNotifications([
+          ...notifications,
+          {
+            type: "success",
+            message: "Invoice successfully confirmed !",
+            ID: uniqueId().toString(),
+          },
+        ]);
         setInvoicedItems([]);
+        history.push("/person");
       })
       .catch(handleError);
   };
@@ -59,48 +70,32 @@ const InvoicePage = () => {
   };
 
   return (
-    <div>
-      {isInvoiceCompleted ? (
-        <Result
-          icon={<SmileOutlined />}
-          title="Great, we have done all the operations!"
-          extra={
-            <Button type="primary" onClick={() => history.push("/person")}>
-              Check my track list
-            </Button>
-          }
-        />
-      ) : (
-        <>
-          <Table
-            pagination={false}
-            columns={columns}
-            dataSource={data}
-            size="middle"
-          />
-          <div
-            style={{ display: "flex", justifyContent: "flex-end", padding: 5 }}
-          >
-            <Button
-              type="primary"
-              size="large"
-              style={{ borderRadius: 6 }}
-              onClick={onBuy}
-            >
-              Buy
-            </Button>
-            <Button
-              size="large"
-              style={{ borderRadius: 6, marginLeft: 5 }}
-              onClick={onCancel}
-              danger
-            >
-              Cancel
-            </Button>
-          </div>
-        </>
-      )}
-    </div>
+    <>
+      <Table
+        pagination={false}
+        columns={columns}
+        dataSource={data}
+        size="middle"
+      />
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: 5 }}>
+        <Button
+          type="primary"
+          size="large"
+          style={{ borderRadius: 6 }}
+          onClick={onBuy}
+        >
+          Buy
+        </Button>
+        <Button
+          size="large"
+          style={{ borderRadius: 6, marginLeft: 5 }}
+          onClick={onCancel}
+          danger
+        >
+          Cancel
+        </Button>
+      </div>
+    </>
   );
 };
 

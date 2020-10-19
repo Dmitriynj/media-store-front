@@ -29,7 +29,7 @@ const renderTracks = (tracks, invoicedItems) =>
           composer={composer}
           unitPrice={unitPrice}
           alreadyOrdered={alreadyOrdered}
-          isInvoiced={invoicedItems.includes(ID)}
+          isInvoiced={invoicedItems.find(({ ID: curID }) => curID === ID)}
         />
       </Col>
     )
@@ -77,7 +77,6 @@ const TracksContainer = () => {
             data: { value: genres },
           },
         ] = responses;
-        console.log(tracks);
         setState({
           ...state,
           tracks,
@@ -148,7 +147,6 @@ const TracksContainer = () => {
 
     fetchTacks(isAuthenticated, { $skip })
       .then((response) => {
-        console.log(response.data.value);
         setState({
           ...state,
           tracks: response.data.value,

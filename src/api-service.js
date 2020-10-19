@@ -3,6 +3,7 @@ import axios from "axios";
 
 const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
 const INVOICES_SERVICE = "http://localhost:4004/invoices";
+const USER_SERVICE = "http://localhost:4004/user";
 
 const constructGenresQuery = (genreIds) => {
   return !isEmpty(genreIds)
@@ -45,12 +46,13 @@ const fetchGenres = () => {
 };
 
 const invoice = (tracks) => {
+  console.log(tracks);
   return axios.post(
     `${INVOICES_SERVICE}/invoice`,
     {
-      tracks: tracks.map(({ unitPrice, track_ID }) => ({
+      tracks: tracks.map(({ unitPrice, ID }) => ({
         unitPrice: `${unitPrice}`,
-        track_ID,
+        ID,
       })),
     },
     {
@@ -59,4 +61,8 @@ const invoice = (tracks) => {
   );
 };
 
-export { fetchTacks, countTracks, fetchGenres, invoice };
+const fetchUser = () => {
+  return axios.get(`${USER_SERVICE}/getUser()`);
+};
+
+export { fetchTacks, countTracks, fetchGenres, invoice, fetchUser };
