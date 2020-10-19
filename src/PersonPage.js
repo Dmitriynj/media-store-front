@@ -2,16 +2,20 @@ import React, { useState, useEffect } from "react";
 import { Card } from "antd";
 import { fetchUser } from "./api-service";
 import { useErrors } from "./useErrors";
+import { useGlobals } from "./GlobalContext";
 
 const PersonPage = () => {
+  const { setLoading } = useGlobals();
   const { handleError } = useErrors();
   const [person, setPerson] = useState({});
   console.log("person", person);
 
   useEffect(() => {
+    setLoading(true);
     fetchUser()
       .then((response) => {
         setPerson(response.data);
+        setLoading(false);
       })
       .catch(handleError);
   }, []);
