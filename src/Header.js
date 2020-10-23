@@ -6,20 +6,38 @@ import {
   LogoutOutlined,
   LoginOutlined,
 } from "@ant-design/icons";
-import { useHistory } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useGlobals } from "./GlobalContext";
 import "./Header.css";
 
+const { SubMenu } = Menu;
+
 const keys = ["/", "/person", "/login", "/add-track", "/invoice"];
+const AVAILABLE_LOCALES = ["en", "fr", "de"];
+const RELOAD_LOCATION_NUMBER = 0;
 
 const Header = () => {
   const history = useHistory();
-  const { user, invoicedItems, setUser } = useGlobals();
   const location = useLocation();
+  const { user, invoicedItems, setUser, locale, setLocale } = useGlobals();
   const currentKey = [keys.find((key) => key === location.pathname)];
   const haveInvoicedItems = !isEmpty(invoicedItems);
   const invoicedItemsLength = invoicedItems.length;
+
+  const onChangeLocale = (value) => {
+    setLocale(value);
+    history.go(RELOAD_LOCATION_NUMBER);
+  };
+  const localeElements = AVAILABLE_LOCALES.filter(
+    (localeName) => localeName !== locale
+  ).map((curLocale, index) => (
+    <Menu.Item
+      key={`${index}${curLocale}`}
+      onClick={() => onChangeLocale(curLocale)}
+    >
+      {curLocale}
+    </Menu.Item>
+  ));
 
   return (
     <div
@@ -87,6 +105,8 @@ const Header = () => {
             </div>
           </Menu.Item>
         )}
+
+        <SubMenu title={locale}>{localeElements}</SubMenu>
 
         {!!user ? (
           <Menu.Item

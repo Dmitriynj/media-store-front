@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useEffect,
-  createContext,
-  useContext,
-  useState,
-} from "react";
+import React, { useMemo, createContext, useContext, useState } from "react";
 import axios from "axios";
 
 const globalContext = {
@@ -17,6 +11,7 @@ const globalContext = {
     level: undefined,
     mockedToken: undefined,
   },
+  locale: undefined,
   invoicedItems: [],
   notifications: [],
 };
@@ -24,7 +19,7 @@ const GlobalContext = createContext(globalContext);
 const useGlobals = () => useContext(GlobalContext);
 
 const useUserData = () => {
-  const getUserData = () => {
+  const getUserDataFromLS = () => {
     const userFromLS = JSON.parse(localStorage.getItem("user"));
     if (userFromLS) {
       axios.defaults.headers.common[
@@ -34,9 +29,9 @@ const useUserData = () => {
     return userFromLS;
   };
 
-  const setUserData = (value) => {
+  const setUserDataToLS = (value) => {
     if (!!value) {
-      localStorage.setItem("user", JSON.stringify(value));
+      localStorage.setItem("user", value);
       axios.defaults.headers.common[
         "Authorization"
       ] = `Basic ${value.mockedToken}`;
@@ -46,16 +41,35 @@ const useUserData = () => {
     }
   };
 
-  return { getUserData, setUserData };
+  const setLocaleToLS = (value) => {
+    localStorage.setItem("locale", value);
+    axios.defaults.headers.common["Accept-language"] = value;
+  };
+
+  const getLocaleFromLS = () => {
+    const localeFromLS = localStorage.getItem("locale");
+    const selectedLocale =
+      localeFromLS && localeFromLS !== "undefined" ? localeFromLS : "en";
+    axios.defaults.headers.common["Accept-language"] = selectedLocale;
+    return selectedLocale;
+  };
+
+  return { getUserDataFromLS, setUserDataToLS, setLocaleToLS, getLocaleFromLS };
 };
 
 const GlobalContextProvider = ({ children }) => {
-  const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
   const [invoicedItems, setInvoicedItems] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const { getUserData, setUserData } = useUserData();
+  const [user, setUser] = useState(undefined);
+  const [locale, setLocale] = useState(undefined);
+  const {
+    getUserDataFromLS,
+    setUserDataToLS,
+    getLocaleFromLS,
+    setLocaleToLS,
+  } = useUserData();
 
   const value = useMemo(
     () => ({
@@ -63,11 +77,16 @@ const GlobalContextProvider = ({ children }) => {
       loading: loading,
       invoicedItems: invoicedItems,
       notifications: notifications,
-      user: user ? user : getUserData(),
+      user: user ? user : getUserDataFromLS(),
+      locale: locale ? locale : getLocaleFromLS(),
+      setLocale: (localeParam) => {
+        setLocaleToLS(localeParam);
+        setLocale(localeParam);
+      },
       setLoading: (loadingParam) => setLoading(loadingParam),
       setError: (errorParam) => setError(errorParam),
       setUser: (userParam) => {
-        setUserData(userParam);
+        setUserDataToLS(userParam);
         setUser(userParam);
       },
       setInvoicedItems: (invoicedItemsParam) =>
@@ -75,7 +94,7 @@ const GlobalContextProvider = ({ children }) => {
       setNotifications: (notificationsParam) =>
         setNotifications(notificationsParam),
     }),
-    [user, loading, error, invoicedItems, notifications]
+    [locale, user, loading, error, invoicedItems, notifications]
   );
 
   return (

@@ -6,7 +6,6 @@ import {
   Redirect,
 } from "react-router-dom";
 import { isEmpty } from "lodash";
-import { Layout } from "antd";
 import { TracksContainer } from "./TracksPage";
 import { CurrentPageHeader } from "./CurrentPageHeader";
 import { Header } from "./Header";
