@@ -16,17 +16,12 @@ import { Login } from "./Login";
 import { withRestrictions } from "./withRestrictions";
 import { InvoicePage } from "./InvoicePage";
 
-const { Content } = Layout;
-
-const RestrictedLogin = withRestrictions(Login, ({ user }) => !user.isAuth);
+const RestrictedLogin = withRestrictions(Login, ({ user }) => !user);
 const RestrictedInvoicePage = withRestrictions(
   InvoicePage,
-  ({ user, invoicedItems }) => user.isAuth && !isEmpty(invoicedItems)
+  ({ user, invoicedItems }) => !!user && !isEmpty(invoicedItems)
 );
-const RestrictedPersonPage = withRestrictions(
-  PersonPage,
-  ({ user }) => user.isAuth
-);
+const RestrictedPersonPage = withRestrictions(PersonPage, ({ user }) => !!user);
 
 const MyRouter = () => {
   return (

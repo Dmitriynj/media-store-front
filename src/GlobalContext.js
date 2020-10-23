@@ -1,4 +1,10 @@
-import React, { useMemo, createContext, useContext, useState } from "react";
+import React, {
+  useMemo,
+  useEffect,
+  createContext,
+  useContext,
+  useState,
+} from "react";
 import axios from "axios";
 
 const globalContext = {
@@ -10,7 +16,6 @@ const globalContext = {
     email: undefined,
     level: undefined,
     mockedToken: undefined,
-    isAuth: undefined,
   },
   invoicedItems: [],
   notifications: [],
@@ -19,63 +24,59 @@ const GlobalContext = createContext(globalContext);
 const useGlobals = () => useContext(GlobalContext);
 
 const useUserData = () => {
-  const setDefaultAuthHeader = (value) => {
-    axios.defaults.headers.common["Authorization"] = `Basic ${value}`;
+  const getUserData = () => {
+    const userFromLS = JSON.parse(localStorage.getItem("user"));
+    if (userFromLS) {
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Basic ${userFromLS.mockedToken}`;
+    }
+    return userFromLS;
   };
 
-  const getUserToken = () => {
-    const token = localStorage.getItem("userToken");
-    if (!!token && token !== "undefined") {
-      setDefaultAuthHeader(token);
+  const setUserData = (value) => {
+    if (!!value) {
+      localStorage.setItem("user", JSON.stringify(value));
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Basic ${value.mockedToken}`;
+    } else {
+      localStorage.removeItem("user");
+      delete axios.defaults.headers.common["Authorization"];
     }
-    if (token === "undefined") {
-      return undefined;
-    }
-    return token;
-  };
-  const setUserToken = (token) => {
-    setDefaultAuthHeader(token);
-    localStorage.setItem("userToken", token);
   };
 
-  return { getUserToken, setUserToken };
+  return { getUserData, setUserData };
 };
 
 const GlobalContextProvider = ({ children }) => {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
   const [invoicedItems, setInvoicedItems] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const { getUserData, setUserData } = useUserData();
 
-  const { getUserToken, setUserToken } = useUserData();
-  const getUser = () => {
-    const mockedToken = getUserToken();
-    const isAuth = !!mockedToken;
-    return { isAuth, mockedToken };
-  };
-
-  const value = useMemo(() => {
-    console.log("current globals: ", user, loading, error);
-
-    return {
+  const value = useMemo(
+    () => ({
       error: error,
       loading: loading,
       invoicedItems: invoicedItems,
       notifications: notifications,
+      user: user ? user : getUserData(),
       setLoading: (loadingParam) => setLoading(loadingParam),
       setError: (errorParam) => setError(errorParam),
       setUser: (userParam) => {
-        setUserToken(userParam.mockedToken);
+        setUserData(userParam);
         setUser(userParam);
       },
-      getUser: () => getUser(),
       setInvoicedItems: (invoicedItemsParam) =>
         setInvoicedItems(invoicedItemsParam),
       setNotifications: (notificationsParam) =>
         setNotifications(notificationsParam),
-    };
-  }, [user, loading, error, invoicedItems, notifications]);
+    }),
+    [user, loading, error, invoicedItems, notifications]
+  );
 
   return (
     <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>

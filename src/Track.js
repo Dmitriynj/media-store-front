@@ -11,7 +11,7 @@ const Track = ({
   albumTitle,
   artist,
   unitPrice,
-  alreadyOrdered,
+  isButtonVisible,
   isInvoiced: isInvoicedProp,
 }) => {
   const { setInvoicedItems, invoicedItems } = useGlobals();
@@ -52,7 +52,7 @@ const Track = ({
         <span>
           Price: <span style={{ fontWeight: 600 }}>{unitPrice}</span>
         </span>
-        {!alreadyOrdered && (
+        {isButtonVisible && (
           <Button
             type="primary"
             size="small"

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { debounce } from "lodash";
 import { Input, Col, Row, Select, Pagination } from "antd";
+import { useHistory } from "react-router-dom";
 import { Track } from "./Track";
 import "./TracksPage.css";
 import { useGlobals } from "./GlobalContext";
@@ -16,7 +17,7 @@ const DEBOUNCE_OPTIONS = {
   trailing: false,
 };
 
-const renderTracks = (tracks, invoicedItems) =>
+const renderTracks = (tracks, invoicedItems, hasInvoiceFeature) =>
   tracks.map(
     ({ ID, name, composer, genre, unitPrice, alreadyOrdered, album }) => (
       <Col key={ID} className="gutter-row" span={8}>
@@ -28,7 +29,7 @@ const renderTracks = (tracks, invoicedItems) =>
           artist={album.artist.name}
           composer={composer}
           unitPrice={unitPrice}
-          alreadyOrdered={alreadyOrdered}
+          isButtonVisible={hasInvoiceFeature ? !alreadyOrdered : false}
           isInvoiced={invoicedItems.find(({ ID: curID }) => curID === ID)}
         />
       </Col>
@@ -42,7 +43,7 @@ const renderGenres = (genres) =>
   ));
 
 const TracksContainer = () => {
-  const { getUser, setLoading, invoicedItems } = useGlobals();
+  const { user, setLoading, invoicedItems } = useGlobals();
   const { handleError } = useErrors();
   const [state, setState] = useState({
     tracks: [],
@@ -57,7 +58,9 @@ const TracksContainer = () => {
       genreIds: [],
     },
   });
-  const isAuthenticated = getUser().isAuth;
+
+  const isAuthenticated = !!user;
+  const hasInvoiceFeature = isAuthenticated;
 
   useEffect(() => {
     setLoading(true);
@@ -157,7 +160,11 @@ const TracksContainer = () => {
       .catch(handleError);
   };
 
-  const trackElements = renderTracks(state.tracks, invoicedItems);
+  const trackElements = renderTracks(
+    state.tracks,
+    invoicedItems,
+    hasInvoiceFeature
+  );
   const genreElements = renderGenres(state.genres);
 
   return (

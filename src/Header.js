@@ -15,12 +15,11 @@ const keys = ["/", "/person", "/login", "/add-track", "/invoice"];
 
 const Header = () => {
   const history = useHistory();
-  const { getUser, invoicedItems, setUser } = useGlobals();
+  const { user, invoicedItems, setUser } = useGlobals();
   const location = useLocation();
   const currentKey = [keys.find((key) => key === location.pathname)];
   const haveInvoicedItems = !isEmpty(invoicedItems);
   const invoicedItemsLength = invoicedItems.length;
-  const user = getUser();
 
   return (
     <div
@@ -42,12 +41,12 @@ const Header = () => {
           Browse
         </Menu.Item>
 
-        {user.isAuth && (
+        {!!user && (
           <Menu.Item key="/person" onClick={() => history.push("/person")}>
             Profile
           </Menu.Item>
         )}
-        {user.isAuth && user.isAdmin && (
+        {!!user && user.isAdmin && (
           <Menu.Item
             key="/add-track"
             onClick={() => history.push("/add-track")}
@@ -89,9 +88,12 @@ const Header = () => {
           </Menu.Item>
         )}
 
-        {user.isAuth ? (
+        {!!user ? (
           <Menu.Item
-            onClick={() => setUser({})}
+            onClick={() => {
+              setUser(undefined);
+              history.push("/");
+            }}
             danger
             icon={<LogoutOutlined style={{ fontSize: 16 }} />}
           ></Menu.Item>

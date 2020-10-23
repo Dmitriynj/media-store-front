@@ -1,7 +1,6 @@
 import React from "react";
 import { Breadcrumb, Spin, Alert } from "antd";
 import { useLocation } from "react-router-dom";
-import { uniqueId } from "lodash";
 import { useGlobals } from "./GlobalContext";
 
 const names = {
@@ -28,7 +27,7 @@ const CurrentPageHeader = () => {
         showIcon
         closable
         onClose={() => onCloseAlert(ID)}
-        style={{ margin: "10px 0" }}
+        style={{ margin: "10px 0", borderRadius: 6 }}
       />
     );
   });

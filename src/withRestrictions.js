@@ -1,6 +1,7 @@
 import React from "react";
 import { Redirect, useLocation } from "react-router-dom";
 import axios from "axios";
+import { useHistory } from "react-router-dom";
 import { useGlobals } from "./GlobalContext";
 
 const pagesConfig = {
@@ -14,8 +15,8 @@ const pagesConfig = {
 
 const withRestrictions = (Component, isUserMeetRestrictions) => {
   return (props) => {
-    const { getUser, invoicedItems } = useGlobals();
-    const user = getUser();
+    const { user, invoicedItems } = useGlobals();
+    console.log("checkoing requirements", user);
 
     return isUserMeetRestrictions({ user, invoicedItems }) ? (
       <Component {...props} />

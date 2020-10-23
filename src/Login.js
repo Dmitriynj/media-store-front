@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { useGlobals } from "./GlobalContext";
 import { useErrors } from "./useErrors";
 
-const USER_SERVICE = "http://localhost:4004/user";
+const USER_SERVICE = "http://localhost:4004/users";
 
 const layout = {
   labelCol: {
@@ -39,10 +39,10 @@ const Login = () => {
         const { ID, email, level, mockedToken, roles } = response.data;
         setUser({
           ID,
+          roles,
           email,
           level,
           mockedToken,
-          roles,
         });
         setLoading(false);
         history.push("/");

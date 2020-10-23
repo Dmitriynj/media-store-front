@@ -3,7 +3,7 @@ import axios from "axios";
 
 const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
 const INVOICES_SERVICE = "http://localhost:4004/invoices";
-const USER_SERVICE = "http://localhost:4004/user";
+const USER_SERVICE = "http://localhost:4004/users";
 
 const constructGenresQuery = (genreIds) => {
   return !isEmpty(genreIds)
@@ -46,7 +46,6 @@ const fetchGenres = () => {
 };
 
 const invoice = (tracks) => {
-  console.log(tracks);
   return axios.post(
     `${INVOICES_SERVICE}/invoice`,
     {
@@ -61,8 +60,27 @@ const invoice = (tracks) => {
   );
 };
 
-const fetchUser = () => {
-  return axios.get(`${USER_SERVICE}/getUser()`);
+const fetchPerson = () => {
+  return axios.get(`${USER_SERVICE}/getPerson()`);
 };
 
-export { fetchTacks, countTracks, fetchGenres, invoice, fetchUser };
+const confirmPerson = (person) => {
+  return axios.post(
+    `${USER_SERVICE}/updatePerson`,
+    {
+      person,
+    },
+    {
+      headers: { "content-type": "application/json" },
+    }
+  );
+};
+
+export {
+  fetchTacks,
+  countTracks,
+  fetchGenres,
+  invoice,
+  fetchPerson,
+  confirmPerson,
+};

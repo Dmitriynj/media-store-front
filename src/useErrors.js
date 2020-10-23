@@ -3,11 +3,15 @@ import { useGlobals } from "./GlobalContext";
 
 const useErrors = () => {
   const history = useHistory();
-  const { setError } = useGlobals();
+  const { setError, setUser } = useGlobals();
 
   const handleError = (error) => {
     console.error("Error", error);
+
     if (error.response) {
+      if (error.response.status === 401) {
+        setUser(undefined);
+      }
       setError({
         status: error.response.status,
         statusText: error.response.statusText,
