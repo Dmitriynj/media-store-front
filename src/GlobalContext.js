@@ -17,10 +17,14 @@ const globalContext = {
 };
 const GlobalContext = createContext(globalContext);
 const useGlobals = () => useContext(GlobalContext);
+const AVAILABLE_LOCALES = ["en", "fr", "de"];
 
 const useUserData = () => {
   const getUserDataFromLS = () => {
-    const userFromLS = JSON.parse(localStorage.getItem("user"));
+    let userFromLS;
+    try {
+      userFromLS = JSON.parse(localStorage.getItem("user"));
+    } catch (e) {}
     if (userFromLS) {
       axios.defaults.headers.common[
         "Authorization"
@@ -31,7 +35,7 @@ const useUserData = () => {
 
   const setUserDataToLS = (value) => {
     if (!!value) {
-      localStorage.setItem("user", value);
+      localStorage.setItem("user", JSON.stringify(value));
       axios.defaults.headers.common[
         "Authorization"
       ] = `Basic ${value.mockedToken}`;
@@ -49,7 +53,11 @@ const useUserData = () => {
   const getLocaleFromLS = () => {
     const localeFromLS = localStorage.getItem("locale");
     const selectedLocale =
-      localeFromLS && localeFromLS !== "undefined" ? localeFromLS : "en";
+      localeFromLS &&
+      localeFromLS !== "undefined" &&
+      AVAILABLE_LOCALES.includes(localeFromLS)
+        ? localeFromLS
+        : "en";
     axios.defaults.headers.common["Accept-language"] = selectedLocale;
     return selectedLocale;
   };
@@ -62,7 +70,7 @@ const GlobalContextProvider = ({ children }) => {
   const [error, setError] = useState({});
   const [invoicedItems, setInvoicedItems] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(null);
   const [locale, setLocale] = useState(undefined);
   const {
     getUserDataFromLS,

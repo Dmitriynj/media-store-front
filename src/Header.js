@@ -110,10 +110,7 @@ const Header = () => {
 
         {!!user ? (
           <Menu.Item
-            onClick={() => {
-              setUser(undefined);
-              history.push("/");
-            }}
+            onClick={() => setUser(null)}
             danger
             icon={<LogoutOutlined style={{ fontSize: 16 }} />}
           ></Menu.Item>

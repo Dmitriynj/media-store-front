@@ -76,6 +76,10 @@ const confirmPerson = (person) => {
   );
 };
 
+const fetchInvoices = () => {
+  return axios.get(`${INVOICES_SERVICE}/MyInvoices`);
+};
+
 export {
   fetchTacks,
   countTracks,
@@ -83,4 +87,5 @@ export {
   invoice,
   fetchPerson,
   confirmPerson,
+  fetchInvoices,
 };

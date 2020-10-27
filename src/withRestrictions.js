@@ -16,8 +16,6 @@ const pagesConfig = {
 const withRestrictions = (Component, isUserMeetRestrictions) => {
   return (props) => {
     const { user, invoicedItems } = useGlobals();
-    console.log("checkoing requirements", user);
-
     return isUserMeetRestrictions({ user, invoicedItems }) ? (
       <Component {...props} />
     ) : (
