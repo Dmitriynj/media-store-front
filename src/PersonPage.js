@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, Button, Divider, Table } from "antd";
-import { uniqueId, omit, isEmpty } from "lodash";
+import { Card, Button, message, Table, Divider } from "antd";
+import { omit } from "lodash";
 import { fetchPerson, confirmPerson, fetchInvoices } from "./api-service";
 import { useErrors } from "./useErrors";
 import { useGlobals } from "./GlobalContext";
@@ -28,9 +28,10 @@ const columns = [
     dataIndex: "status",
   },
 ];
+const MESSAGE_TIMEOUT = 2;
 
 const PersonPage = () => {
-  const { setLoading, setNotifications, notifications } = useGlobals();
+  const { setLoading } = useGlobals();
   const { handleError } = useErrors();
   const [initialPerson, setInitialPerson] = useState({});
   const [person, setPerson] = useState({
@@ -50,16 +51,8 @@ const PersonPage = () => {
   const onConfirmChanges = () => {
     confirmPerson(person)
       .then(() => {
-        setNotifications([
-          ...notifications,
-          {
-            type: "success",
-            message: "Person successfully updated!",
-            ID: uniqueId().toString(),
-          },
-        ]);
-        console.log(person, "some123");
         setInitialPerson(person);
+        message.success("Person successfully updated", MESSAGE_TIMEOUT);
       })
       .catch(handleError);
   };
@@ -101,8 +94,8 @@ const PersonPage = () => {
   }, []);
 
   const renderOrderedItems = (items) => {
-    return items.map(({ status }) => ({
-      status,
+    return items.map(({ ID: key, invoiceItems }) => ({
+      key,
     }));
   };
 
@@ -183,13 +176,22 @@ const PersonPage = () => {
           </Button>
         )}
       </Card>
-      {!isEmpty(orderedDataItems) && (
-        <Table
-          pagination={false}
-          columns={columns}
-          dataSource={orderedDataItems}
-          size="middle"
-        />
+
+      {orderedDataItems && (
+        <>
+          <Divider orientation="left">My tracks</Divider>
+          <div
+            style={{ borderRadius: 6, backgroundColor: "white", padding: 10 }}
+          >
+            <Table
+              bordered={false}
+              pagination={false}
+              columns={columns}
+              dataSource={orderedDataItems}
+              size="middle"
+            />
+          </div>
+        </>
       )}
     </>
   );

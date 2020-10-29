@@ -1,5 +1,6 @@
 import React from "react";
 import { Breadcrumb, Spin, Alert } from "antd";
+import { MinusOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import { useGlobals } from "./GlobalContext";
 
@@ -12,38 +13,17 @@ const names = {
 
 const CurrentPageHeader = () => {
   const location = useLocation();
-  const { loading, notifications, setNotifications } = useGlobals();
-
-  const onCloseAlert = (ID) => {
-    setNotifications(notifications.filter(({ ID: curID }) => curID === ID));
-  };
-
-  const notificationElements = notifications.map(({ ID, message, type }) => {
-    return (
-      <Alert
-        key={ID}
-        message={message}
-        type={type}
-        showIcon
-        closable
-        onClose={() => onCloseAlert(ID)}
-        style={{ margin: "10px 0", borderRadius: 6 }}
-      />
-    );
-  });
+  const { loading } = useGlobals();
 
   return (
-    <>
-      <Breadcrumb
-        style={{ height: 50, paddingBottom: 20, fontWeight: 600, fontSize: 20 }}
-      >
-        <Breadcrumb.Item>
-          {names[location.pathname]}
-          <span style={{ padding: 10 }}>{loading && <Spin />}</span>
-        </Breadcrumb.Item>
-      </Breadcrumb>
-      {notificationElements}
-    </>
+    <Breadcrumb
+      style={{ height: 50, paddingBottom: 20, fontWeight: 600, fontSize: 20 }}
+    >
+      <Breadcrumb.Item>
+        {names[location.pathname]}
+        <span style={{ padding: 10 }}>{loading && <Spin />}</span>
+      </Breadcrumb.Item>
+    </Breadcrumb>
   );
 };
 

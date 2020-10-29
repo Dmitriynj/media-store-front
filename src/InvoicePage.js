@@ -1,10 +1,10 @@
 import React from "react";
-import { Table, Button } from "antd";
-import { uniqueId } from "lodash";
+import { Table, Button, message, Descriptions } from "antd";
 import { useGlobals } from "./GlobalContext";
 import { useHistory } from "react-router-dom";
 import { invoice } from "./api-service";
 import { useErrors } from "./useErrors";
+import "./InvoicePage.css";
 
 const columns = [
   {
@@ -24,17 +24,12 @@ const columns = [
     dataIndex: "unitPrice",
   },
 ];
+const MESSAGE_TIMEOUT = 2;
 
 const InvoicePage = () => {
   const history = useHistory();
   const { handleError } = useErrors();
-  const {
-    invoicedItems,
-    setInvoicedItems,
-    setLoading,
-    setNotifications,
-    notifications,
-  } = useGlobals();
+  const { invoicedItems, setInvoicedItems, setLoading } = useGlobals();
 
   const data = invoicedItems.map(({ ID: key, ...otherProps }) => ({
     key,
@@ -51,15 +46,8 @@ const InvoicePage = () => {
     )
       .then(() => {
         setLoading(false);
-        setNotifications([
-          ...notifications,
-          {
-            type: "success",
-            message: "Invoice successfully confirmed !",
-            ID: uniqueId().toString(),
-          },
-        ]);
         setInvoicedItems([]);
+        message.success("Invoice successfully completed", MESSAGE_TIMEOUT);
         history.push("/person");
       })
       .catch(handleError);
@@ -70,32 +58,41 @@ const InvoicePage = () => {
   };
 
   return (
-    <>
+    <div style={{ borderRadius: 6, backgroundColor: "white", padding: 10 }}>
       <Table
+        bordered={false}
         pagination={false}
         columns={columns}
         dataSource={data}
         size="middle"
+        footer={() => (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              padding: 5,
+            }}
+          >
+            <Button
+              type="primary"
+              size="large"
+              style={{ borderRadius: 6 }}
+              onClick={onBuy}
+            >
+              Buy
+            </Button>
+            <Button
+              size="large"
+              style={{ borderRadius: 6, marginLeft: 5 }}
+              onClick={onCancel}
+              danger
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
       />
-      <div style={{ display: "flex", justifyContent: "flex-end", padding: 5 }}>
-        <Button
-          type="primary"
-          size="large"
-          style={{ borderRadius: 6 }}
-          onClick={onBuy}
-        >
-          Buy
-        </Button>
-        <Button
-          size="large"
-          style={{ borderRadius: 6, marginLeft: 5 }}
-          onClick={onCancel}
-          danger
-        >
-          Cancel
-        </Button>
-      </div>
-    </>
+    </div>
   );
 };
 

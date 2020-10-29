@@ -69,7 +69,6 @@ const GlobalContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
   const [invoicedItems, setInvoicedItems] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [user, setUser] = useState(null);
   const [locale, setLocale] = useState(undefined);
   const {
@@ -84,25 +83,21 @@ const GlobalContextProvider = ({ children }) => {
       error: error,
       loading: loading,
       invoicedItems: invoicedItems,
-      notifications: notifications,
       user: user ? user : getUserDataFromLS(),
       locale: locale ? locale : getLocaleFromLS(),
-      setLocale: (localeParam) => {
-        setLocaleToLS(localeParam);
-        setLocale(localeParam);
-      },
-      setLoading: (loadingParam) => setLoading(loadingParam),
-      setError: (errorParam) => setError(errorParam),
+      setLoading,
+      setError,
+      setInvoicedItems,
       setUser: (userParam) => {
         setUserDataToLS(userParam);
         setUser(userParam);
       },
-      setInvoicedItems: (invoicedItemsParam) =>
-        setInvoicedItems(invoicedItemsParam),
-      setNotifications: (notificationsParam) =>
-        setNotifications(notificationsParam),
+      setLocale: (localeParam) => {
+        setLocaleToLS(localeParam);
+        setLocale(localeParam);
+      },
     }),
-    [locale, user, loading, error, invoicedItems, notifications]
+    [locale, user, loading, error, invoicedItems]
   );
 
   return (

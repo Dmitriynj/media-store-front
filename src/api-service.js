@@ -2,7 +2,7 @@ import { isEmpty } from "lodash";
 import axios from "axios";
 
 const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
-const INVOICES_SERVICE = "http://localhost:4004/invoices";
+const INVOICES_SERVICE = "http://localhost:4004/browse-invoices";
 const USER_SERVICE = "http://localhost:4004/users";
 
 const constructGenresQuery = (genreIds) => {
@@ -77,7 +77,9 @@ const confirmPerson = (person) => {
 };
 
 const fetchInvoices = () => {
-  return axios.get(`${INVOICES_SERVICE}/MyInvoices`);
+  return axios.get(
+    `${INVOICES_SERVICE}/Invoices?$expand=invoiceItems($expand=track)`
+  );
 };
 
 export {
