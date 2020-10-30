@@ -60,7 +60,7 @@ const TracksContainer = () => {
   });
 
   const isAuthenticated = !!user;
-  const hasInvoiceFeature = isAuthenticated;
+  const hasInvoiceFeature = isAuthenticated && user.roles.includes("customer");
 
   useEffect(() => {
     setLoading(true);

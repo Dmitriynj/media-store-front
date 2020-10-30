@@ -14,13 +14,19 @@ import { ErrorPage } from "./ErrorPage";
 import { Login } from "./Login";
 import { withRestrictions } from "./withRestrictions";
 import { InvoicePage } from "./InvoicePage";
+import { AddTrack } from "./AddTrack";
 
 const RestrictedLogin = withRestrictions(Login, ({ user }) => !user);
 const RestrictedInvoicePage = withRestrictions(
   InvoicePage,
-  ({ user, invoicedItems }) => !!user && !isEmpty(invoicedItems)
+  ({ user, invoicedItems }) =>
+    !!user && !isEmpty(invoicedItems) && user.roles.includes("customer")
 );
 const RestrictedPersonPage = withRestrictions(PersonPage, ({ user }) => !!user);
+const RestrictedAddTrack = withRestrictions(
+  AddTrack,
+  ({ user }) => !!user && user.roles.includes("employee")
+);
 
 const MyRouter = () => {
   return (
@@ -45,6 +51,9 @@ const MyRouter = () => {
               </Route>
               <Route exact path="/invoice">
                 <RestrictedInvoicePage />
+              </Route>
+              <Route exact path="/add-track">
+                <RestrictedAddTrack />
               </Route>
               <Route>
                 <Redirect to="/error" />

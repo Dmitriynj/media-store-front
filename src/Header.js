@@ -64,12 +64,12 @@ const Header = () => {
             Profile
           </Menu.Item>
         )}
-        {!!user && user.isAdmin && (
+        {!!user && user.roles.includes("employee") && (
           <Menu.Item
             key="/add-track"
             onClick={() => history.push("/add-track")}
           >
-            Manage orders
+            Add track
           </Menu.Item>
         )}
       </Menu>
@@ -80,7 +80,7 @@ const Header = () => {
         mode="horizontal"
         selectedKeys={currentKey}
       >
-        {haveInvoicedItems && (
+        {haveInvoicedItems && !!user && user.roles.includes("customer") && (
           <Menu.Item
             style={{
               width: 40,
@@ -110,7 +110,10 @@ const Header = () => {
 
         {!!user ? (
           <Menu.Item
-            onClick={() => setUser(null)}
+            onClick={() => {
+              setUser(undefined);
+              history.push("/");
+            }}
             danger
             icon={<LogoutOutlined style={{ fontSize: 16 }} />}
           ></Menu.Item>

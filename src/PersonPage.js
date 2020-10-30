@@ -1,37 +1,29 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, Button, message, Table, Divider } from "antd";
+import { Card, Button, message } from "antd";
 import { omit } from "lodash";
+
 import { fetchPerson, confirmPerson, fetchInvoices } from "./api-service";
 import { useErrors } from "./useErrors";
 import { useGlobals } from "./GlobalContext";
 import { Editable } from "./Editable";
+import { MyInvoices } from "./MyInvoices";
 
-const columns = [
-  {
-    title: "Name",
-    dataIndex: "name",
-  },
-  {
-    title: "Artist",
-    dataIndex: "artist",
-  },
-  {
-    title: "Album",
-    dataIndex: "albumTitle",
-  },
-  {
-    title: "Price",
-    dataIndex: "unitPrice",
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-  },
-];
 const MESSAGE_TIMEOUT = 2;
+const PERSON_PROP = {
+  address: "Address ",
+  city: "City ",
+  country: "Country ",
+  fax: "Fax: ",
+  firstName: "First name: ",
+  lastName: "Last name: ",
+  phone: "Phone: ",
+  postalCode: "Postal code: ",
+  state: "State",
+  email: "email",
+};
 
 const PersonPage = () => {
-  const { setLoading } = useGlobals();
+  const { user, setLoading } = useGlobals();
   const { handleError } = useErrors();
   const [initialPerson, setInitialPerson] = useState({});
   const [person, setPerson] = useState({
@@ -46,7 +38,21 @@ const PersonPage = () => {
     fax: "",
     email: "",
   });
-  const [orderedItems, setOrderedItems] = useState([]);
+
+  useEffect(() => {
+    setLoading(true);
+
+    fetchPerson()
+      .then((response) => {
+        let { data: personData } = response;
+
+        personData = omit(personData, "@odata.context");
+        setInitialPerson(personData);
+        setPerson(personData);
+        setLoading(false);
+      })
+      .catch(handleError);
+  }, []);
 
   const onConfirmChanges = () => {
     confirmPerson(person)
@@ -72,34 +78,23 @@ const PersonPage = () => {
     return false;
   }, [person, initialPerson]);
 
-  useEffect(() => {
-    setLoading(true);
-
-    Promise.all([fetchPerson(), fetchInvoices()])
-      .then((responses) => {
-        let [
-          { data: personData },
-          {
-            data: { value: orderedItemsFromDB },
-          },
-        ] = responses;
-
-        personData = omit(personData, "@odata.context");
-        setInitialPerson(personData);
-        setPerson(personData);
-        setOrderedItems(orderedItemsFromDB);
-        setLoading(false);
-      })
-      .catch(handleError);
+  const personProperties = Object.keys(person).reduce((acc, currentKey) => {
+    if (currentKey === "email") {
+      return acc;
+    }
+    return acc.concat([
+      <div key={currentKey}>
+        {PERSON_PROP[currentKey]}
+        <Editable
+          type="text"
+          value={person[currentKey]}
+          onChange={(value) =>
+            setPerson({ ...person, [`${currentKey}`]: value })
+          }
+        />
+      </div>,
+    ]);
   }, []);
-
-  const renderOrderedItems = (items) => {
-    return items.map(({ ID: key, invoiceItems }) => ({
-      key,
-    }));
-  };
-
-  const orderedDataItems = renderOrderedItems(orderedItems);
 
   return (
     <>
@@ -107,62 +102,7 @@ const PersonPage = () => {
         style={{ borderRadius: 6 }}
         title={`${person.lastName} ${person.firstName}`}
       >
-        <div>
-          City:{" "}
-          <Editable
-            type="text"
-            value={person.city}
-            onChange={(city) => setPerson({ ...person, city })}
-          />
-        </div>
-        <div>
-          State:{" "}
-          <Editable
-            type="text"
-            value={person.state}
-            onChange={(state) => setPerson({ ...person, state })}
-          />
-        </div>
-        <div>
-          Address:{" "}
-          <Editable
-            type="text"
-            value={person.address}
-            onChange={(address) => setPerson({ ...person, address })}
-          />
-        </div>
-        <div>
-          Country:{" "}
-          <Editable
-            type="text"
-            value={person.country}
-            onChange={(country) => setPerson({ ...person, country })}
-          />
-        </div>
-        <div>
-          Postal code:{" "}
-          <Editable
-            type="text"
-            value={person.postalCode}
-            onChange={(postalCode) => setPerson({ ...person, postalCode })}
-          />
-        </div>
-        <div>
-          Phone:{" "}
-          <Editable
-            type="text"
-            value={person.phone}
-            onChange={(phone) => setPerson({ ...person, phone })}
-          />
-        </div>
-        <div>
-          Fax:{" "}
-          <Editable
-            type="text"
-            value={person.fax}
-            onChange={(fax) => setPerson({ ...person, fax })}
-          />
-        </div>
+        {personProperties}
         <div>
           Email: <span style={{ fontWeight: 600 }}>{person.email}</span>
         </div>
@@ -176,23 +116,7 @@ const PersonPage = () => {
           </Button>
         )}
       </Card>
-
-      {orderedDataItems && (
-        <>
-          <Divider orientation="left">My tracks</Divider>
-          <div
-            style={{ borderRadius: 6, backgroundColor: "white", padding: 10 }}
-          >
-            <Table
-              bordered={false}
-              pagination={false}
-              columns={columns}
-              dataSource={orderedDataItems}
-              size="middle"
-            />
-          </div>
-        </>
-      )}
+      {user.roles.includes("customer") && <MyInvoices />}
     </>
   );
 };

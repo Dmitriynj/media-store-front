@@ -78,7 +78,19 @@ const confirmPerson = (person) => {
 
 const fetchInvoices = () => {
   return axios.get(
-    `${INVOICES_SERVICE}/Invoices?$expand=invoiceItems($expand=track)`
+    `${INVOICES_SERVICE}/Invoices?$expand=invoiceItems($expand=track($expand=album($expand=artist)))`
+  );
+};
+
+const cancelInvoice = (ID) => {
+  return axios.post(
+    `${INVOICES_SERVICE}/cancelInvoice`,
+    {
+      ID,
+    },
+    {
+      headers: { "content-type": "application/json" },
+    }
   );
 };
 
@@ -90,4 +102,5 @@ export {
   fetchPerson,
   confirmPerson,
   fetchInvoices,
+  cancelInvoice,
 };

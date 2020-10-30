@@ -9,6 +9,7 @@ const names = {
   "/person": "Profile",
   "/login": "Login form",
   "/invoice": "Requested items",
+  "/add-track": "Add track form",
 };
 
 const CurrentPageHeader = () => {

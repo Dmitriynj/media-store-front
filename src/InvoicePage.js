@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button, message, Descriptions } from "antd";
+import { Table, Button, message } from "antd";
 import { useGlobals } from "./GlobalContext";
 import { useHistory } from "react-router-dom";
 import { invoice } from "./api-service";
