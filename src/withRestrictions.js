@@ -1,17 +1,6 @@
 import React from "react";
-import { Redirect, useLocation } from "react-router-dom";
-import axios from "axios";
-import { useHistory } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import { useGlobals } from "./GlobalContext";
-
-const pagesConfig = {
-  "/person": {
-    isAuth: true,
-  },
-  "/login": {
-    isAuth: false,
-  },
-};
 
 const withRestrictions = (Component, isUserMeetRestrictions) => {
   return (props) => {
@@ -24,4 +13,15 @@ const withRestrictions = (Component, isUserMeetRestrictions) => {
   };
 };
 
-export { withRestrictions };
+const withRestrictedSection = (Component, isUserMeetRestrictions) => {
+  return (props) => {
+    const { user, invoicedItems } = useGlobals();
+    return (
+      isUserMeetRestrictions({ user, invoicedItems }) && (
+        <Component {...props} />
+      )
+    );
+  };
+};
+
+export { withRestrictions, withRestrictedSection };

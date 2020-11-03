@@ -12,7 +12,7 @@ import "./Header.css";
 
 const { SubMenu } = Menu;
 
-const keys = ["/", "/person", "/login", "/add-track", "/invoice"];
+const keys = ["/", "/person", "/login", "/manage", "/invoice"];
 const AVAILABLE_LOCALES = ["en", "fr", "de"];
 const RELOAD_LOCATION_NUMBER = 0;
 
@@ -65,11 +65,8 @@ const Header = () => {
           </Menu.Item>
         )}
         {!!user && user.roles.includes("employee") && (
-          <Menu.Item
-            key="/add-track"
-            onClick={() => history.push("/add-track")}
-          >
-            Add track
+          <Menu.Item key="/manage" onClick={() => history.push("/manage")}>
+            Manage
           </Menu.Item>
         )}
       </Menu>

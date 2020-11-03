@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Button, message, Divider, Tag, Collapse, Table, Spin } from "antd";
 import moment from "moment";
-import { useErrors } from "./useErrors";
-import { useGlobals } from "./GlobalContext";
-import { cancelInvoice, fetchInvoices } from "./api-service";
+import { useErrors } from "../../useErrors";
+import { useGlobals } from "../../GlobalContext";
+import { cancelInvoice, fetchInvoices } from "../../api-service";
 
 const { Panel } = Collapse;
 const MESSAGE_TIMEOUT = 2;
@@ -42,13 +42,32 @@ const INVOICE_ITEMS_COLUMNS = [
     dataIndex: "unitPrice",
   },
 ];
+const LEVERAGE_DURATION = 1; // in hours
+const STATUSES = { submitted: 1, shipped: 2, canceled: -1 };
 
-const ExtraHeader = ({ ID, status: initialStatus }) => {
+const isLeverageTimeExpired = (invoiceDate) => {
+  const duration = moment.duration(
+    moment(moment().utc().format()).diff(invoiceDate)
+  );
+  return duration.asHours() > LEVERAGE_DURATION;
+};
+
+const chooseStatus = (invoiceDate, statusFromDb) => {
+  if (
+    isLeverageTimeExpired(invoiceDate) &&
+    statusFromDb !== STATUSES.canceled
+  ) {
+    return INVOICE_STATUS[STATUSES.shipped];
+  }
+  return INVOICE_STATUS[statusFromDb];
+};
+
+const ExtraHeader = ({ ID, invoiceDate, status: initialStatus }) => {
   const { loading, setLoading } = useGlobals();
   const { handleError } = useErrors();
   const [loadingHeaderId, setLoadingHeaderId] = useState();
   const [status, setStatus] = useState(initialStatus);
-  const statusConfig = INVOICE_STATUS[status];
+  const statusConfig = chooseStatus(invoiceDate, status);
 
   const onCancelInvoice = (event, ID) => {
     event.stopPropagation();
@@ -87,21 +106,24 @@ const MyInvoices = () => {
 
   useEffect(() => {
     setLoading(true);
-
     fetchInvoices()
       .then((response) => {
-        let {
-          data: { value: invoices },
+        const {
+          data: { value },
         } = response;
-
-        setInvoices(invoices);
+        setInvoices(value);
         setLoading(false);
       })
       .catch(handleError);
   }, []);
 
-  const genExtra = (ID, status) => <ExtraHeader ID={ID} status={status} />;
-  const renderInvoices = () => {
+  const genExtra = useCallback(
+    (ID, status, invoiceDate) => (
+      <ExtraHeader ID={ID} status={status} invoiceDate={invoiceDate} />
+    ),
+    []
+  );
+  const invoiceElements = useMemo(() => {
     return invoices.map(({ ID, status, invoiceDate, total, invoiceItems }) => {
       const invoiceItemsData = invoiceItems.map(
         ({
@@ -128,7 +150,7 @@ const MyInvoices = () => {
         <Panel
           header={moment(invoiceDate).format(DATE_TIME_FORMAT_PATTERN)}
           key={ID}
-          extra={genExtra(ID, status)}
+          extra={genExtra(ID, status, invoiceDate)}
         >
           <div>
             <Table
@@ -147,9 +169,7 @@ const MyInvoices = () => {
         </Panel>
       );
     });
-  };
-
-  const invoiceElements = renderInvoices(invoices);
+  }, [invoices]);
 
   return (
     <div>

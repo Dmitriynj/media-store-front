@@ -1,6 +1,5 @@
 import React from "react";
-import { Breadcrumb, Spin, Alert } from "antd";
-import { MinusOutlined } from "@ant-design/icons";
+import { Breadcrumb, Spin } from "antd";
 import { useLocation } from "react-router-dom";
 import { useGlobals } from "./GlobalContext";
 
@@ -9,7 +8,7 @@ const names = {
   "/person": "Profile",
   "/login": "Login form",
   "/invoice": "Requested items",
-  "/add-track": "Add track form",
+  "/manage": "Manage store",
 };
 
 const CurrentPageHeader = () => {

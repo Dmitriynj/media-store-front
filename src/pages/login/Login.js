@@ -2,8 +2,8 @@ import React from "react";
 import { Form, Input, Button, Checkbox } from "antd";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
-import { useGlobals } from "./GlobalContext";
-import { useErrors } from "./useErrors";
+import { useGlobals } from "../../GlobalContext";
+import { useErrors } from "../../useErrors";
 
 const USER_SERVICE = "http://localhost:4004/users";
 

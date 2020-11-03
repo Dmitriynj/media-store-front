@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, Button, message } from "antd";
 import { omit } from "lodash";
-
-import { fetchPerson, confirmPerson, fetchInvoices } from "./api-service";
-import { useErrors } from "./useErrors";
-import { useGlobals } from "./GlobalContext";
-import { Editable } from "./Editable";
-import { MyInvoices } from "./MyInvoices";
+import { fetchPerson, confirmPerson } from "../../api-service";
+import { useErrors } from "../../useErrors";
+import { useGlobals } from "../../GlobalContext";
+import { Editable } from "../../Editable";
 
 const MESSAGE_TIMEOUT = 2;
 const PERSON_PROP = {
@@ -22,8 +20,8 @@ const PERSON_PROP = {
   email: "email",
 };
 
-const PersonPage = () => {
-  const { user, setLoading } = useGlobals();
+const PersonPage = ({ myInvoicesSection }) => {
+  const { setLoading } = useGlobals();
   const { handleError } = useErrors();
   const [initialPerson, setInitialPerson] = useState({});
   const [person, setPerson] = useState({
@@ -45,7 +43,6 @@ const PersonPage = () => {
     fetchPerson()
       .then((response) => {
         let { data: personData } = response;
-
         personData = omit(personData, "@odata.context");
         setInitialPerson(personData);
         setPerson(personData);
@@ -116,7 +113,7 @@ const PersonPage = () => {
           </Button>
         )}
       </Card>
-      {user.roles.includes("customer") && <MyInvoices />}
+      {myInvoicesSection}
     </>
   );
 };

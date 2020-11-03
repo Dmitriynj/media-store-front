@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { debounce } from "lodash";
 import { Input, Col, Row, Select, Pagination } from "antd";
-import { useHistory } from "react-router-dom";
 import { Track } from "./Track";
 import "./TracksPage.css";
-import { useGlobals } from "./GlobalContext";
-import { useErrors } from "./useErrors";
-import { fetchTacks, countTracks, fetchGenres } from "./api-service";
+import { useGlobals } from "../../GlobalContext";
+import { useErrors } from "../../useErrors";
+import { fetchTacks, countTracks, fetchGenres } from "../../api-service";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -145,10 +144,15 @@ const TracksContainer = () => {
     document
       .querySelector("section.ant-layout")
       .scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    const $skip = (pageNumber - 1) * state.pagination.pageSize;
     setLoading(true);
 
-    fetchTacks(isAuthenticated, { $skip })
+    const options = {
+      $top: state.pagination.pageSize,
+      substr: state.searchOptions.substr,
+      genreIds: state.searchOptions.genreIds,
+      $skip: (pageNumber - 1) * state.pagination.pageSize,
+    };
+    fetchTacks(isAuthenticated, options)
       .then((response) => {
         setState({
           ...state,

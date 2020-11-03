@@ -2,7 +2,7 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 import { isEmpty } from "lodash";
 import { Result, Button } from "antd";
-import { useGlobals } from "./GlobalContext";
+import { useGlobals } from "../GlobalContext";
 
 const ErrorPage = () => {
   const { error, setError } = useGlobals();

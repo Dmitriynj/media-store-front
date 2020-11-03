@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Button } from "antd";
 import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
-import { useGlobals } from "./GlobalContext";
+import { useGlobals } from "../../GlobalContext";
 
 const Track = ({
   ID,

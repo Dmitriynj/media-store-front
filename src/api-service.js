@@ -4,6 +4,7 @@ import axios from "axios";
 const BROWSE_TRACKS_SERVICE = "http://localhost:4004/browse-tracks";
 const INVOICES_SERVICE = "http://localhost:4004/browse-invoices";
 const USER_SERVICE = "http://localhost:4004/users";
+const MANAGE_STORE = "http://localhost:4004/manage-store";
 
 const constructGenresQuery = (genreIds) => {
   return !isEmpty(genreIds)
@@ -94,6 +95,18 @@ const cancelInvoice = (ID) => {
   );
 };
 
+const fetchAlbumsByName = (substr = "", top) => {
+  return axios.get(
+    `${BROWSE_TRACKS_SERVICE}/Albums?$filter=${`contains(title,'${substr}')&$top=${top}`}`
+  );
+};
+
+const addTrack = (data) => {
+  return axios.post(`${MANAGE_STORE}/addTrack`, data, {
+    headers: { "content-type": "application/json" },
+  });
+};
+
 export {
   fetchTacks,
   countTracks,
@@ -103,4 +116,6 @@ export {
   confirmPerson,
   fetchInvoices,
   cancelInvoice,
+  fetchAlbumsByName,
+  addTrack,
 };
