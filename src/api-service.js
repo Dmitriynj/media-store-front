@@ -102,7 +102,31 @@ const fetchAlbumsByName = (substr = "", top) => {
 };
 
 const addTrack = (data) => {
-  return axios.post(`${MANAGE_STORE}/addTrack`, data, {
+  return axios.post(`${MANAGE_STORE}/Tracks`, data, {
+    headers: { "content-type": "application/json" },
+  });
+};
+
+const addArtist = (data) => {
+  return axios.post(`${MANAGE_STORE}/Artists`, data, {
+    headers: { "content-type": "application/json" },
+  });
+};
+
+const addAlbum = (data) => {
+  return axios.post(`${MANAGE_STORE}/Albums`, data, {
+    headers: { "content-type": "application/json" },
+  });
+};
+
+const fetchArtistsByName = (substr = "", top) => {
+  return axios.get(
+    `${MANAGE_STORE}/Artists?$filter=${`contains(name,'${substr}')&$top=${top}`}`
+  );
+};
+
+const login = (data) => {
+  return axios.post(`${USER_SERVICE}/login`, data, {
     headers: { "content-type": "application/json" },
   });
 };
@@ -118,4 +142,8 @@ export {
   cancelInvoice,
   fetchAlbumsByName,
   addTrack,
+  addArtist,
+  addAlbum,
+  fetchArtistsByName,
+  login,
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, Input, Button, Checkbox } from "antd";
-import axios from "axios";
+import { login } from "../../api-service";
 import { useHistory } from "react-router-dom";
 import { useGlobals } from "../../GlobalContext";
 import { useErrors } from "../../useErrors";
@@ -30,19 +30,16 @@ const Login = () => {
   const onFinish = (values) => {
     console.log("Validation Success:", values);
     setLoading(true);
-    axios
-      .get(
-        `${USER_SERVICE}/mockLogin(email='${values.username}',password='${values.password}')`
-      )
+    login({ email: values.email, password: values.password })
       .then((response) => {
         console.log(response.data);
-        const { ID, email, level, mockedToken, roles } = response.data;
+        const { ID, email, level, token, roles } = response.data;
         setUser({
           ID,
           roles,
           email,
           level,
-          mockedToken,
+          token,
         });
         setLoading(false);
         history.push("/");
@@ -65,12 +62,12 @@ const Login = () => {
       onFinishFailed={onFinishFailed}
     >
       <Form.Item
-        label="Username"
-        name="username"
+        label="Email"
+        name="email"
         rules={[
           {
             required: true,
-            message: "Please input your username!",
+            message: "Please input your email!",
           },
         ]}
       >

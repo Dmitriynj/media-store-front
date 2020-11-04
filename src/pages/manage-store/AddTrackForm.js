@@ -50,7 +50,7 @@ const AddTrackForm = () => {
       <Form.Item label="Composer" name="composer" rules={REQUIRED}>
         <Input />
       </Form.Item>
-      <Form.Item label="Album" name="albumTitle" rules={REQUIRED}>
+      <Form.Item label="Album" name="albumID" rules={REQUIRED}>
         <Select
           showSearch
           placeholder="Select album"
@@ -62,11 +62,13 @@ const AddTrackForm = () => {
         >
           {albums &&
             albums.map((album) => (
-              <Select.Option key={album.title}>{album.title}</Select.Option>
+              <Select.Option key={album.title} value={album.ID}>
+                {album.title}
+              </Select.Option>
             ))}
         </Select>
       </Form.Item>
-      <Form.Item label="Genre" name="genreName" rules={REQUIRED}>
+      <Form.Item label="Genre" name="genreID" rules={REQUIRED}>
         <Select
           showSearch
           placeholder="Select genre"
@@ -76,7 +78,9 @@ const AddTrackForm = () => {
         >
           {genres &&
             genres.map((genre) => (
-              <Select.Option key={genre.name}>{genre.name}</Select.Option>
+              <Select.Option key={genre.name} value={genre.ID}>
+                {genre.name}
+              </Select.Option>
             ))}
         </Select>
       </Form.Item>

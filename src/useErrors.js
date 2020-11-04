@@ -1,9 +1,12 @@
 import { useHistory } from "react-router-dom";
 import { useGlobals } from "./GlobalContext";
+import { message } from "antd";
+
+const MESSAGE_TIMEOUT = 2;
 
 const useErrors = () => {
   const history = useHistory();
-  const { setError, setUser } = useGlobals();
+  const { setError, setUser, setLoading } = useGlobals();
 
   const handleError = (error) => {
     console.error("Error", error);
@@ -11,11 +14,20 @@ const useErrors = () => {
     if (error.response) {
       if (error.response.status === 401) {
         setUser(undefined);
+        setLoading(false);
+        message.error(
+          "You are not unauthorized, try login again",
+          MESSAGE_TIMEOUT
+        );
+        history.push("/login");
+        return;
       }
       setError({
         status: error.response.status,
         statusText: error.response.statusText,
-        message: error.response.data.error.message,
+        message: error.response.data.error
+          ? error.response.data.error.message
+          : error.response.data,
       });
     } else {
       setError({

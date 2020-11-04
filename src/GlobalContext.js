@@ -9,7 +9,7 @@ const globalContext = {
     roles: [],
     email: undefined,
     level: undefined,
-    mockedToken: undefined,
+    token: undefined,
   },
   locale: undefined,
   invoicedItems: [],
@@ -28,7 +28,7 @@ const useUserData = () => {
     if (userFromLS) {
       axios.defaults.headers.common[
         "Authorization"
-      ] = `Basic ${userFromLS.mockedToken}`;
+      ] = `Basic ${userFromLS.token}`;
     }
     return userFromLS;
   };
@@ -36,9 +36,7 @@ const useUserData = () => {
   const setUserDataToLS = (value) => {
     if (!!value) {
       localStorage.setItem("user", JSON.stringify(value));
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Basic ${value.mockedToken}`;
+      axios.defaults.headers.common["Authorization"] = `Basic ${value.token}`;
     } else {
       localStorage.removeItem("user");
       delete axios.defaults.headers.common["Authorization"];

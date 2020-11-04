@@ -1,16 +1,28 @@
-import React, { useState, useMemo } from "react";
-import { Form, Radio, Button } from "antd";
+import React, { useState, useMemo, useEffect } from "react";
+import { Form, Radio, Button, message } from "antd";
 import { AddTrackForm } from "./AddTrackForm";
+import { AddArtistForm } from "./AddArtistForm";
+import { AddAlbumForm } from "./AddAlbumForm";
 import { useErrors } from "../../useErrors";
 import { useGlobals } from "../../GlobalContext";
-import { addTrack } from "../../api-service";
+import { addTrack, addArtist, addAlbum } from "../../api-service";
+import "./ManageStore.css";
 
 const FORM_TYPES = {
   track: "track",
+  artist: "artist",
+  album: "album",
+  playlist: "",
 };
+const DEFAULT_MEDIA_TYPE_ID = 1;
+const MESSAGE_TIMEOUT = 2;
 
 const chooseForm = (type) => {
-  return type === "track" && <AddTrackForm />;
+  return (
+    (type === "track" && <AddTrackForm />) ||
+    (type === "artist" && <AddArtistForm />) ||
+    (type === "album" && <AddAlbumForm />)
+  );
 };
 
 const ManageStore = () => {
@@ -19,20 +31,48 @@ const ManageStore = () => {
   const { setLoading } = useGlobals();
   const [formType, setFormType] = useState("track");
 
-  const formElement = useMemo(() => chooseForm(formType), [formType]);
+  useEffect(() => {
+    form.resetFields();
+  }, [formType]);
+
+  const formElement = useMemo(() => {
+    return chooseForm(formType);
+  }, [formType]);
 
   const onChangeForm = (event) => {
     setFormType(event.target.value);
   };
 
-  const sendCreateRequest = ({ type, ...others }) => {
-    if (type === FORM_TYPES.track) {
-      console.log("others", others);
-      setLoading(true);
-      addTrack({ ...others })
-        .then(() => setLoading(false))
-        .catch(handleError);
+  const sendCreateRequest = ({ type, ...data }) => {
+    setLoading(true);
+
+    let promise;
+    switch (type) {
+      case FORM_TYPES.track:
+        promise = addTrack({
+          name: data.name,
+          composer: data.composer,
+          album: { ID: data.albumID },
+          mediaType: { ID: DEFAULT_MEDIA_TYPE_ID },
+          genre: { ID: data.genreID },
+        });
+        break;
+      case FORM_TYPES.artist:
+        promise = addArtist(data);
+        break;
+      case FORM_TYPES.album:
+        promise = addAlbum({ title: data.name, artist: { ID: data.artistID } });
+        break;
+      default:
     }
+
+    promise
+      .then(() => {
+        setLoading(false);
+        message.success("Entity successfully created", MESSAGE_TIMEOUT);
+        form.resetFields();
+      })
+      .catch(handleError);
   };
 
   return (
@@ -55,9 +95,16 @@ const ManageStore = () => {
       >
         <Form.Item label="Entity" name="type">
           <Radio.Group onChange={onChangeForm}>
-            <Radio.Button value="track">Track</Radio.Button>
+            <Radio.Button value="track" style={{ borderRadius: "6px 0 0 6px" }}>
+              Track
+            </Radio.Button>
             <Radio.Button value="album">Album</Radio.Button>
-            <Radio.Button value="artist">Artist</Radio.Button>
+            <Radio.Button
+              value="artist"
+              style={{ borderRadius: "0 6px 6px 0" }}
+            >
+              Artist
+            </Radio.Button>
           </Radio.Group>
         </Form.Item>
         {formElement}
@@ -67,6 +114,7 @@ const ManageStore = () => {
             span: 14,
             offset: 4,
           }}
+          style={{ borderRadius: 6 }}
         >
           <Button onClick={() => form.submit()}>Create</Button>
         </Form.Item>
