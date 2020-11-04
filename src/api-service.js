@@ -12,31 +12,27 @@ const constructGenresQuery = (genreIds) => {
     : "";
 };
 
-const fetchTacks = (
-  isAuthenticated = false,
-  { $top = 20, $skip = 0, genreIds = [], substr = "" } = {}
-) => {
-  const entityName = isAuthenticated ? "MarkedTracks" : "Tracks";
-
+const fetchTacks = ({
+  $top = 20,
+  $skip = 0,
+  genreIds = [],
+  substr = "",
+} = {}) => {
   const serializeTracksUrl = () => {
     return `$expand=genre,album($expand=artist)&$top=${$top}&$skip=${$skip}&$filter=${
       `contains(name,'${substr}')` + constructGenresQuery(genreIds)
     }`;
   };
 
-  return axios.get(`${BROWSE_TRACKS_SERVICE}/${entityName}`, {
+  return axios.get(`${BROWSE_TRACKS_SERVICE}/${axios.defaults.tracksEntity}`, {
     params: {},
     paramsSerializer: () => serializeTracksUrl(),
   });
 };
 
-const countTracks = (
-  isAuthenticated = false,
-  { genreIds = [], substr = "" } = {}
-) => {
-  const entityName = isAuthenticated ? "MarkedTracks" : "Tracks";
+const countTracks = ({ genreIds = [], substr = "" } = {}) => {
   return axios.get(
-    `${BROWSE_TRACKS_SERVICE}/${entityName}/$count?$filter=${
+    `${BROWSE_TRACKS_SERVICE}/${axios.defaults.tracksEntity}/$count?$filter=${
       `contains(name,'${substr}')` + constructGenresQuery(genreIds)
     }`
   );

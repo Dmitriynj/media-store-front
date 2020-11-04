@@ -30,6 +30,10 @@ const useUserData = () => {
         "Authorization"
       ] = `Basic ${userFromLS.token}`;
     }
+    axios.defaults.tracksEntity =
+      !!userFromLS && userFromLS.roles.includes("customer")
+        ? "MarkedTracks"
+        : "Tracks";
     return userFromLS;
   };
 
@@ -37,9 +41,13 @@ const useUserData = () => {
     if (!!value) {
       localStorage.setItem("user", JSON.stringify(value));
       axios.defaults.headers.common["Authorization"] = `Basic ${value.token}`;
+      axios.defaults.tracksEntity = value.roles.includes("customer")
+        ? "MarkedTracks"
+        : "Tracks";
     } else {
       localStorage.removeItem("user");
       delete axios.defaults.headers.common["Authorization"];
+      delete axios.defaults.tracksEntity;
     }
   };
 
@@ -57,6 +65,7 @@ const useUserData = () => {
         ? localeFromLS
         : "en";
     axios.defaults.headers.common["Accept-language"] = selectedLocale;
+
     return selectedLocale;
   };
 

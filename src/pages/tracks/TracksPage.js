@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { debounce } from "lodash";
 import { Input, Col, Row, Select, Pagination } from "antd";
 import { Track } from "./Track";
@@ -16,7 +16,7 @@ const DEBOUNCE_OPTIONS = {
   trailing: false,
 };
 
-const renderTracks = (tracks, invoicedItems, hasInvoiceFeature) =>
+const renderTracks = (tracks, invoicedItems) =>
   tracks.map(
     ({ ID, name, composer, genre, unitPrice, alreadyOrdered, album }) => (
       <Col key={ID} className="gutter-row" span={8}>
@@ -28,7 +28,7 @@ const renderTracks = (tracks, invoicedItems, hasInvoiceFeature) =>
           artist={album.artist.name}
           composer={composer}
           unitPrice={unitPrice}
-          isButtonVisible={hasInvoiceFeature ? !alreadyOrdered : false}
+          isButtonVisible={!alreadyOrdered}
           isInvoiced={invoicedItems.find(({ ID: curID }) => curID === ID)}
         />
       </Col>
@@ -58,14 +58,11 @@ const TracksContainer = () => {
     },
   });
 
-  const isAuthenticated = !!user;
-  const hasInvoiceFeature = isAuthenticated && user.roles.includes("customer");
-
   useEffect(() => {
     setLoading(true);
 
-    const countTracksReq = countTracks(isAuthenticated);
-    const getTracksRequest = fetchTacks(isAuthenticated);
+    const countTracksReq = countTracks();
+    const getTracksRequest = fetchTacks();
     const getGenresReq = fetchGenres();
 
     Promise.all([countTracksReq, getTracksRequest, getGenresReq])
@@ -100,8 +97,8 @@ const TracksContainer = () => {
       };
 
       Promise.all([
-        fetchTacks(isAuthenticated, options),
-        countTracks(isAuthenticated, {
+        fetchTacks(options),
+        countTracks({
           substr: options.substr,
           genreIds: options.genreIds,
         }),
@@ -152,7 +149,7 @@ const TracksContainer = () => {
       genreIds: state.searchOptions.genreIds,
       $skip: (pageNumber - 1) * state.pagination.pageSize,
     };
-    fetchTacks(isAuthenticated, options)
+    fetchTacks(options)
       .then((response) => {
         setState({
           ...state,
@@ -164,11 +161,7 @@ const TracksContainer = () => {
       .catch(handleError);
   };
 
-  const trackElements = renderTracks(
-    state.tracks,
-    invoicedItems,
-    hasInvoiceFeature
-  );
+  const trackElements = renderTracks(state.tracks, invoicedItems);
   const genreElements = renderGenres(state.genres);
 
   return (
