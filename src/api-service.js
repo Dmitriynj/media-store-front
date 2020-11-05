@@ -58,14 +58,14 @@ const invoice = (tracks) => {
 };
 
 const fetchPerson = () => {
-  return axios.get(`${USER_SERVICE}/getPerson()`);
+  return axios.get(`${USER_SERVICE}/${axios.defaults.userEntity}`);
 };
 
 const confirmPerson = (person) => {
-  return axios.post(
-    `${USER_SERVICE}/updatePerson`,
+  return axios.put(
+    `${USER_SERVICE}/${axios.defaults.userEntity}`,
     {
-      person,
+      ...person,
     },
     {
       headers: { "content-type": "application/json" },

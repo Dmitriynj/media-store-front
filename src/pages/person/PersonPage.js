@@ -18,6 +18,7 @@ const PERSON_PROP = {
   postalCode: "Postal code: ",
   state: "State",
   email: "email",
+  company: "Company: ",
 };
 
 const PersonPage = ({ myInvoicesSection }) => {
@@ -35,6 +36,7 @@ const PersonPage = ({ myInvoicesSection }) => {
     postalCode: "",
     fax: "",
     email: "",
+    company: "",
   });
 
   useEffect(() => {
@@ -43,7 +45,8 @@ const PersonPage = ({ myInvoicesSection }) => {
     fetchPerson()
       .then((response) => {
         let { data: personData } = response;
-        personData = omit(personData, "@odata.context");
+        personData = omit(personData, "@odata.context", "ID");
+        console.log("personData", personData);
         setInitialPerson(personData);
         setPerson(personData);
         setLoading(false);
@@ -52,8 +55,10 @@ const PersonPage = ({ myInvoicesSection }) => {
   }, []);
 
   const onConfirmChanges = () => {
+    setLoading(true);
     confirmPerson(person)
       .then(() => {
+        setLoading(false);
         setInitialPerson(person);
         message.success("Person successfully updated", MESSAGE_TIMEOUT);
       })

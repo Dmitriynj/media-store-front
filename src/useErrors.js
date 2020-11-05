@@ -11,17 +11,16 @@ const useErrors = () => {
   const handleError = (error) => {
     console.error("Error", error);
 
+    console.log("error", error);
     if (error.response) {
-      if (error.response.status === 401) {
+      if (error.response.status === 401 || error.response.status === 403) {
         setUser(undefined);
         setLoading(false);
-        message.error(
-          "You are not unauthorized, try login again",
-          MESSAGE_TIMEOUT
-        );
-        history.push("/login");
-        return;
+        // message.error("You are unauthorized, try login again", MESSAGE_TIMEOUT);
+        // history.push("/login");
+        // return;
       }
+
       setError({
         status: error.response.status,
         statusText: error.response.statusText,

@@ -42,7 +42,7 @@ const renderGenres = (genres) =>
   ));
 
 const TracksContainer = () => {
-  const { user, setLoading, invoicedItems } = useGlobals();
+  const { setLoading, invoicedItems } = useGlobals();
   const { handleError } = useErrors();
   const [state, setState] = useState({
     tracks: [],

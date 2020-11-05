@@ -29,6 +29,11 @@ const useUserData = () => {
       axios.defaults.headers.common[
         "Authorization"
       ] = `Basic ${userFromLS.token}`;
+      axios.defaults.userID = userFromLS.ID;
+      axios.defaults.userEntity =
+        !!userFromLS && userFromLS.roles.includes("customer")
+          ? `Customers/${userFromLS.ID}`
+          : `Employees/${userFromLS.ID}`;
     }
     axios.defaults.tracksEntity =
       !!userFromLS && userFromLS.roles.includes("customer")
@@ -44,10 +49,16 @@ const useUserData = () => {
       axios.defaults.tracksEntity = value.roles.includes("customer")
         ? "MarkedTracks"
         : "Tracks";
+      axios.defaults.userEntity =
+        !!value && value.roles.includes("customer")
+          ? `Customers/${value.ID}`
+          : `Employees/${value.ID}`;
     } else {
       localStorage.removeItem("user");
       delete axios.defaults.headers.common["Authorization"];
-      delete axios.defaults.tracksEntity;
+      delete axios.defaults.userEntity;
+      axios.defaults.tracksEntity =
+        !!value && value.roles.includes("customer") ? "MarkedTracks" : "Tracks";
     }
   };
 
