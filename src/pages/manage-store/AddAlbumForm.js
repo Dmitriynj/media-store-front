@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { Form, Input, Select } from "antd";
 import { useSearch } from "@umijs/hooks";
 import { useErrors } from "../../useErrors";
-import { useGlobals } from "../../GlobalContext";
 import { fetchArtistsByName } from "../../api-service";
 
 const REQUIRED = [
@@ -14,7 +13,6 @@ const REQUIRED = [
 const ARTISTS_LIMIT = 10;
 
 const getArtists = function (value) {
-  console.log("searching for artists");
   return fetchArtistsByName(value, ARTISTS_LIMIT)
     .then((response) => response.data.value)
     .catch(this.handleError);
@@ -28,8 +26,6 @@ const AddAlbumForm = () => {
     onChange: onChangeArtistInput,
     cancel: onArtistCancel,
   } = useSearch(getArtists.bind({ handleError }));
-
-  console.log("artists", artists);
 
   useEffect(() => {
     onChangeArtistInput();

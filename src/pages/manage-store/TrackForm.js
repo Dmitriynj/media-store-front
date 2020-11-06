@@ -20,7 +20,7 @@ const getAlbums = function (value) {
     .catch(this.handleError);
 };
 
-const AddTrackForm = () => {
+const TrackForm = ({ initialAlbumTitle }) => {
   const { handleError } = useErrors();
   const {
     data: albums,
@@ -33,7 +33,7 @@ const AddTrackForm = () => {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchGenres(), onChangeAlbumInput()])
+    Promise.all([fetchGenres(), onChangeAlbumInput(initialAlbumTitle)])
       .then((responses) => {
         setGenres(head(responses).data.value);
         setLoading(false);
@@ -42,8 +42,7 @@ const AddTrackForm = () => {
   }, []);
 
   return (
-    <>
-      <h3>Add track</h3>
+    <div>
       <Form.Item label="Name" name="name" rules={REQUIRED}>
         <Input />
       </Form.Item>
@@ -58,7 +57,6 @@ const AddTrackForm = () => {
           onSearch={onChangeAlbumInput}
           loading={isAlbumsLoading}
           onBlur={onAlbumCancel}
-          style={{ width: 300 }}
         >
           {albums &&
             albums.map((album) => (
@@ -69,13 +67,7 @@ const AddTrackForm = () => {
         </Select>
       </Form.Item>
       <Form.Item label="Genre" name="genreID" rules={REQUIRED}>
-        <Select
-          showSearch
-          placeholder="Select genre"
-          filterOption={false}
-          onSearch={onChangeAlbumInput}
-          style={{ width: 300 }}
-        >
+        <Select showSearch placeholder="Select genre" filterOption={false}>
           {genres &&
             genres.map((genre) => (
               <Select.Option key={genre.name} value={genre.ID}>
@@ -84,8 +76,8 @@ const AddTrackForm = () => {
             ))}
         </Select>
       </Form.Item>
-    </>
+    </div>
   );
 };
 
-export { AddTrackForm };
+export { TrackForm };

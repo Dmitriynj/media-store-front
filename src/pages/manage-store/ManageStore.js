@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Form, Radio, Button, message } from "antd";
-import { AddTrackForm } from "./AddTrackForm";
+import { TrackForm } from "./TrackForm";
 import { AddArtistForm } from "./AddArtistForm";
 import { AddAlbumForm } from "./AddAlbumForm";
 import { useErrors } from "../../useErrors";
@@ -19,7 +19,7 @@ const MESSAGE_TIMEOUT = 2;
 
 const chooseForm = (type) => {
   return (
-    (type === "track" && <AddTrackForm />) ||
+    (type === "track" && <TrackForm />) ||
     (type === "artist" && <AddArtistForm />) ||
     (type === "album" && <AddAlbumForm />)
   );
@@ -76,50 +76,46 @@ const ManageStore = () => {
   };
 
   return (
-    <>
-      <Form
-        form={form}
-        labelCol={{
-          span: 4,
-        }}
+    <Form
+      style={{ width: 700 }}
+      form={form}
+      labelCol={{
+        span: 4,
+      }}
+      wrapperCol={{
+        span: 14,
+      }}
+      layout="horizontal"
+      initialValues={{
+        type: formType,
+      }}
+      type={formType}
+      onFinish={sendCreateRequest}
+      onFinishFailed={() => console.log("Not valid params provided")}
+    >
+      <Form.Item label="Entity" name="type">
+        <Radio.Group onChange={onChangeForm}>
+          <Radio.Button value="track" style={{ borderRadius: "6px 0 0 6px" }}>
+            Track
+          </Radio.Button>
+          <Radio.Button value="album">Album</Radio.Button>
+          <Radio.Button value="artist" style={{ borderRadius: "0 6px 6px 0" }}>
+            Artist
+          </Radio.Button>
+        </Radio.Group>
+      </Form.Item>
+      {formElement}
+      <Form.Item
+        type="primary"
         wrapperCol={{
           span: 14,
+          offset: 4,
         }}
-        layout="horizontal"
-        initialValues={{
-          type: formType,
-        }}
-        type={formType}
-        onFinish={sendCreateRequest}
-        onFinishFailed={() => console.log("Not valid params provided")}
+        style={{ borderRadius: 6 }}
       >
-        <Form.Item label="Entity" name="type">
-          <Radio.Group onChange={onChangeForm}>
-            <Radio.Button value="track" style={{ borderRadius: "6px 0 0 6px" }}>
-              Track
-            </Radio.Button>
-            <Radio.Button value="album">Album</Radio.Button>
-            <Radio.Button
-              value="artist"
-              style={{ borderRadius: "0 6px 6px 0" }}
-            >
-              Artist
-            </Radio.Button>
-          </Radio.Group>
-        </Form.Item>
-        {formElement}
-        <Form.Item
-          type="primary"
-          wrapperCol={{
-            span: 14,
-            offset: 4,
-          }}
-          style={{ borderRadius: 6 }}
-        >
-          <Button onClick={() => form.submit()}>Create</Button>
-        </Form.Item>
-      </Form>
-    </>
+        <Button onClick={() => form.submit()}>Create</Button>
+      </Form.Item>
+    </Form>
   );
 };
 

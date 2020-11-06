@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { debounce } from "lodash";
 import { Input, Col, Row, Select, Pagination } from "antd";
 import { Track } from "./Track";
@@ -16,24 +16,6 @@ const DEBOUNCE_OPTIONS = {
   trailing: false,
 };
 
-const renderTracks = (tracks, invoicedItems) =>
-  tracks.map(
-    ({ ID, name, composer, genre, unitPrice, alreadyOrdered, album }) => (
-      <Col key={ID} className="gutter-row" span={8}>
-        <Track
-          ID={ID}
-          name={name}
-          genreName={genre.name}
-          albumTitle={album.title}
-          artist={album.artist.name}
-          composer={composer}
-          unitPrice={unitPrice}
-          isButtonVisible={!alreadyOrdered}
-          isInvoiced={invoicedItems.find(({ ID: curID }) => curID === ID)}
-        />
-      </Col>
-    )
-  );
 const renderGenres = (genres) =>
   genres.map(({ ID, name }) => (
     <Option key={ID} value={ID.toString()}>
@@ -160,6 +142,33 @@ const TracksContainer = () => {
       })
       .catch(handleError);
   };
+  const deleteTrack = (ID) => {
+    setState({
+      ...state,
+      tracks: state.tracks.filter(({ ID: curID }) => curID !== ID),
+    });
+  };
+  const renderTracks = (tracks, invoicedItems) =>
+    tracks.map(
+      ({ ID, name, composer, genre, unitPrice, alreadyOrdered, album }) => (
+        <Col key={ID} className="gutter-row" span={8}>
+          <Track
+            initialTrack={{
+              ID,
+              name,
+              genre,
+              album,
+              artist: album.artist.name,
+              composer,
+              unitPrice,
+            }}
+            isButtonVisible={!alreadyOrdered}
+            isInvoiced={invoicedItems.find(({ ID: curID }) => curID === ID)}
+            onDeleteTrack={(ID) => deleteTrack(ID)}
+          />
+        </Col>
+      )
+    );
 
   const trackElements = renderTracks(state.tracks, invoicedItems);
   const genreElements = renderGenres(state.genres);

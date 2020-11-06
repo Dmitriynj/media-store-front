@@ -127,6 +127,28 @@ const login = (data) => {
   });
 };
 
+const updateTrack = (track) => {
+  return axios.put(
+    `${MANAGE_STORE}/Tracks/${track.ID}`,
+    {
+      ...track,
+    },
+    {
+      headers: { "content-type": "application/json" },
+    }
+  );
+};
+
+const getTrack = (ID) => {
+  return axios.get(
+    `${BROWSE_TRACKS_SERVICE}/${axios.defaults.tracksEntity}/${ID}?$expand=genre,album($expand=artist)`
+  );
+};
+
+const deleteTrack = (ID) => {
+  return axios.delete(`${MANAGE_STORE}/Tracks(${ID})`);
+};
+
 export {
   fetchTacks,
   countTracks,
@@ -142,4 +164,7 @@ export {
   addAlbum,
   fetchArtistsByName,
   login,
+  updateTrack,
+  getTrack,
+  deleteTrack,
 };
